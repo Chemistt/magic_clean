@@ -1,48 +1,61 @@
+/* @ts-check */
+
 import { FlatCompat } from "@eslint/eslintrc";
+import eslint from "@eslint/js";
+import eslintReact from "@eslint-react/eslint-plugin";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
+import eslintPluginUnicorn from "eslint-plugin-unicorn";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-});
+/* utility to translate legacy eslintrc-style configs into flat configs */
+const compat = new FlatCompat({ baseDirectory: import.meta.dirname });
 
-export default tseslint.config(
-  {
-    ignores: [".next"],
-  },
-  ...compat.extends("next/core-web-vitals"),
-  {
-    files: ["**/*.ts", "**/*.tsx"],
-    extends: [
-      ...tseslint.configs.recommended,
-      ...tseslint.configs.recommendedTypeChecked,
-      ...tseslint.configs.stylisticTypeChecked,
-    ],
-    rules: {
-      "@typescript-eslint/array-type": "off",
-      "@typescript-eslint/consistent-type-definitions": "off",
-      "@typescript-eslint/consistent-type-imports": [
-        "warn",
-        { prefer: "type-imports", fixStyle: "inline-type-imports" },
-      ],
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_" },
-      ],
-      "@typescript-eslint/require-await": "off",
-      "@typescript-eslint/no-misused-promises": [
-        "error",
-        { checksVoidReturn: { attributes: false } },
-      ],
-    },
-  },
-  {
-    linterOptions: {
-      reportUnusedDisableDirectives: true,
-    },
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-      },
-    },
-  },
+const eslintConfig = tseslint.config(
+	...compat.extends("next/core-web-vitals"),
+	eslintReact.configs["recommended-type-checked"],
+	eslint.configs.recommended,
+	tseslint.configs.strictTypeChecked,
+	tseslint.configs.stylisticTypeChecked,
+	eslintPluginUnicorn.configs.recommended,
+	{
+		ignores: ["coverage", "node_modules", ".next", "src/app/_components/ui/**"],
+	},
+	{
+		plugins: { "simple-import-sort": simpleImportSort },
+		rules: {
+			"simple-import-sort/imports": "error",
+			"simple-import-sort/exports": "error",
+			"@typescript-eslint/consistent-type-imports": "error",
+			"@typescript-eslint/consistent-type-exports": "error",
+			"@typescript-eslint/consistent-type-definitions": ["error", "type"],
+			"unicorn/better-regex": "warn",
+			"unicorn/prevent-abbreviations": [
+				"error",
+				{
+					allowList: {
+						env: true,
+						props: true,
+						Props: true,
+						ref: true,
+						Ref: true,
+						utils: true,
+					},
+				},
+			],
+		},
+		languageOptions: {
+			parserOptions: {
+				projectService: true,
+				tsconfigRootDir: import.meta.dirname,
+			},
+			globals: {
+				...globals.browser,
+				...globals.node,
+				...globals.vitest,
+			},
+		},
+	}
 );
+
+export default eslintConfig;
