@@ -3,6 +3,7 @@
 import { FlatCompat } from "@eslint/eslintrc";
 import eslint from "@eslint/js";
 import eslintReact from "@eslint-react/eslint-plugin";
+import eslintConfigPrettier from "eslint-config-prettier/flat";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
 import globals from "globals";
@@ -18,6 +19,7 @@ const eslintConfig = tseslint.config(
 	tseslint.configs.strictTypeChecked,
 	tseslint.configs.stylisticTypeChecked,
 	eslintPluginUnicorn.configs.recommended,
+	eslintConfigPrettier,
 	{
 		ignores: ["coverage", "node_modules", ".next", "src/app/_components/ui/**"],
 	},

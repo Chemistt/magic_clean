@@ -28,17 +28,13 @@ export default async function ProfilePage() {
 					<AvatarImage src={session.user.image ?? undefined} />
 					<AvatarFallback>{session.user.name?.slice(0, 1)}</AvatarFallback>
 				</Avatar>
-				{/* {session.user.image && (
-
-        )} */}
-				{/* Redirect based on user role */}
 				{session.user.role === Role.CLEANER ? (
 					<p>You are a cleaner.</p>
-				) : (session.user.role === Role.HOME_OWNER ? (
+				) : session.user.role === Role.HOME_OWNER ? (
 					<p>You are a home owner.</p>
 				) : (
 					<p>Your role is not recognized.</p>
-				))}
+				)}
 			</main>
 		</HydrateClient>
 	);

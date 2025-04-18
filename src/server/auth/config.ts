@@ -1,10 +1,12 @@
+import "next-auth";
+
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { Role } from "@prisma/client";
-import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import { type DefaultSession } from "next-auth";
+import { type NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 
 import { db } from "@/server/db";
-
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -12,17 +14,20 @@ import { db } from "@/server/db";
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
 declare module "next-auth" {
-	type Session = {
+	// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+	interface Session extends DefaultSession {
 		user: {
 			id: string;
 			role: Role;
 		} & DefaultSession["user"];
-	} & DefaultSession;
-
-	// interface User {
-	//   // ...other properties
-	//   // role: UserRole;
-	// }
+	}
+	// export interface User {
+	// 	id?: string
+	// 	name?: string | null
+	// 	email?: string | null
+	// 	image?: string | null
+	// 	role?: Role
+	//   }
 }
 
 /**
