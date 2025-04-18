@@ -1,5 +1,8 @@
 import "@/styles/globals.css";
 
+import { AppSidebar } from "@components/app-sidebar";
+import { ThemeProvider } from "@components/theme-provider";
+import { SidebarProvider, SidebarTrigger } from "@components/ui/sidebar";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
@@ -23,12 +26,26 @@ export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<html lang="en" className={geist.variable}>
+		<html lang="en" className={geist.variable} suppressHydrationWarning>
 			<ReactScan />
-			<body>
+			<body className="bg-background text-foreground scroll-smooth antialiased transition-colors">
 				<SessionProvider>
-					<TRPCReactProvider>{children}</TRPCReactProvider>
-					<Toaster />
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem
+						disableTransitionOnChange
+						scriptProps={{ "data-cdasync": "false" }}
+					>
+						<TRPCReactProvider>
+							<SidebarProvider>
+								<AppSidebar />
+								<SidebarTrigger />
+								{children}
+								<Toaster expand richColors />
+							</SidebarProvider>
+						</TRPCReactProvider>
+					</ThemeProvider>
 				</SessionProvider>
 			</body>
 		</html>

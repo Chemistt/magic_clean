@@ -69,7 +69,7 @@ model CleanerProfile {
     user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
     bio             String? // @db.Text potentially
     yearsExperience Int?
-    hourlyRate      Decimal? // Example pricing field, could be more complex
+    hourlyRate      Int? // Example pricing field, could be more complex
     servicesOffered Service[]
     // Add other cleaner-specific fields: e.g., travel radius, certifications etc.
     createdAt       DateTime  @default(now())

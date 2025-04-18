@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
+import { ProfileCleanerForm } from "@components/profile-form-cleaner";
 import { Role } from "@prisma/client";
 
 import { auth } from "@/server/auth";
@@ -20,22 +20,15 @@ export default async function ProfilePage() {
 
 	return (
 		<HydrateClient>
-			<main>
-				<h1>Profile</h1>
-				<p>Welcome, {session.user.name}!</p>
-				<p>Your email: {session.user.email}</p>
-				<Avatar>
-					<AvatarImage src={session.user.image ?? undefined} />
-					<AvatarFallback>{session.user.name?.slice(0, 1)}</AvatarFallback>
-				</Avatar>
+			<>
 				{session.user.role === Role.CLEANER ? (
-					<p>You are a cleaner.</p>
+					<ProfileCleanerForm />
 				) : session.user.role === Role.HOME_OWNER ? (
 					<p>You are a home owner.</p>
 				) : (
 					<p>Your role is not recognized.</p>
 				)}
-			</main>
+			</>
 		</HydrateClient>
 	);
 }
