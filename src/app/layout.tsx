@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 
 import { AppSidebar } from "@components/app-sidebar";
 import { ThemeProvider } from "@components/theme-provider";
-import { SidebarProvider, SidebarTrigger } from "@components/ui/sidebar";
+import { SidebarProvider /*, SidebarTrigger*/ } from "@components/ui/sidebar";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
@@ -40,7 +40,7 @@ export default function RootLayout({
 						<TRPCReactProvider>
 							<SidebarProvider>
 								<AppSidebar />
-								<SidebarTrigger />
+								{/* <SidebarTrigger /> */}
 								{children}
 								<Toaster expand richColors />
 							</SidebarProvider>
