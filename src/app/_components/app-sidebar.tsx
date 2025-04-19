@@ -14,6 +14,7 @@ import {
 	SidebarRail,
 } from "@components/ui/sidebar";
 import { Command, Home, Settings, UserPen } from "lucide-react";
+import Link from "next/link";
 
 import { auth } from "@/server/auth";
 const items = [
@@ -74,10 +75,10 @@ export async function AppSidebar({
 							{items.map((item) => (
 								<SidebarMenuItem key={item.title}>
 									<SidebarMenuButton asChild>
-										<a href={item.url}>
+										<Link href={item.url}>
 											<item.icon />
-											<span>{item.title}</span>
-										</a>
+											{item.title}
+										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
 							))}
