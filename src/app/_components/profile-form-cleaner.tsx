@@ -138,7 +138,7 @@ export function ProfileCleanerForm() {
 									<FormItem>
 										<FormLabel>Name</FormLabel>
 										<FormControl>
-											<Input placeholder="Your name" {...field} />
+											<Input placeholder="Your name" {...field} readOnly />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -152,7 +152,11 @@ export function ProfileCleanerForm() {
 									<FormItem>
 										<FormLabel>Email</FormLabel>
 										<FormControl>
-											<Input placeholder="your.email@example.com" {...field} />
+											<Input
+												placeholder="your.email@example.com"
+												{...field}
+												readOnly
+											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -169,6 +173,7 @@ export function ProfileCleanerForm() {
 											<Input
 												placeholder="https://example.com/image.jpg"
 												{...field}
+												readOnly
 											/>
 										</FormControl>
 										<FormDescription>
