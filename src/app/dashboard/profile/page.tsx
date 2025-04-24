@@ -18,16 +18,18 @@ export default async function ProfilePage() {
 	// Prefetch user profile
 	void api.profile.get.prefetch();
 
+	const shouldShowCleanerForm = session.user.role === Role.CLEANER;
+	const shouldShowHomeOwnerForm = session.user.role === Role.HOME_OWNER;
+	const shouldShowAdminForm = session.user.role === Role.ADMIN;
+	const shouldShowPlatformManagerForm =
+		session.user.role === Role.PLATFORM_MANAGER;
 	return (
 		<HydrateClient>
 			<>
-				{session.user.role === Role.CLEANER ? (
-					<ProfileCleanerForm />
-				) : session.user.role === Role.HOME_OWNER ? (
-					<p>You are a home owner.</p>
-				) : (
-					<p>Your role is not recognized.</p>
-				)}
+				{shouldShowCleanerForm && <ProfileCleanerForm />}
+				{shouldShowHomeOwnerForm && <p>You are a home owner.</p>}
+				{shouldShowAdminForm && <p>You are an admin.</p>}
+				{shouldShowPlatformManagerForm && <p>You are a platform manager.</p>}
 			</>
 		</HydrateClient>
 	);
