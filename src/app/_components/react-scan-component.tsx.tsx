@@ -1,3 +1,4 @@
+/* eslint-disable @eslint-react/no-useless-fragment */
 "use client";
 // react-scan must be imported before react
 // eslint-disable-next-line simple-import-sort/imports
