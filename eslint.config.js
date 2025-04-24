@@ -13,12 +13,15 @@ import tseslint from "typescript-eslint";
 const compat = new FlatCompat({ baseDirectory: import.meta.dirname });
 
 const eslintConfig = tseslint.config(
-	...compat.extends("next/core-web-vitals"),
+	...compat.config({
+		extends: ["next/core-web-vitals"],
+	}),
 	eslintReact.configs["recommended-type-checked"],
 	eslint.configs.recommended,
 	tseslint.configs.strictTypeChecked,
 	tseslint.configs.stylisticTypeChecked,
 	eslintPluginUnicorn.configs.recommended,
+	eslintReact.configs["recommended-type-checked"],
 	eslintConfigPrettier,
 	{
 		ignores: ["coverage", "node_modules", ".next", "src/app/_components/ui/**"],
@@ -45,6 +48,19 @@ const eslintConfig = tseslint.config(
 					},
 				},
 			],
+			"@eslint-react/no-useless-fragment": "warn",
+			"@eslint-react/prefer-react-namespace-import": "error",
+			"@eslint-react/prefer-shorthand-boolean": "warn",
+			"@eslint-react/no-complex-conditional-rendering": "error",
+			"@eslint-react/hooks-extra/no-unnecessary-use-callback": "error",
+			"@eslint-react/hooks-extra/no-unnecessary-use-memo": "error",
+			"@eslint-react/naming-convention/component-name": ["error", "PascalCase"],
+			"@eslint-react/naming-convention/filename": [
+				"error",
+				{ rule: "kebab-case" },
+			],
+			"@eslint-react/naming-convention/filename-extension": "error",
+			"@eslint-react/naming-convention/use-state": "error",
 		},
 		languageOptions: {
 			parserOptions: {
