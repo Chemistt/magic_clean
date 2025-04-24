@@ -7,6 +7,7 @@ import {
 	SidebarInset,
 	SidebarProvider /*, SidebarTrigger*/,
 } from "@components/ui/sidebar";
+import { WebVitals } from "@components/web-vitals";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
@@ -51,6 +52,7 @@ export default function RootLayout({
 								</SidebarInset>
 							</SidebarProvider>
 						</TRPCReactProvider>
+						<WebVitals />
 					</ThemeProvider>
 				</SessionProvider>
 			</body>
