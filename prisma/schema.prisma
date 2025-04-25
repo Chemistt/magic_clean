@@ -14,51 +14,92 @@ datasource db {
     directUrl = env("DIRECT_URL")
 }
 
+// --- Enums ---
 enum Role {
     HOME_OWNER
     CLEANER
     ADMIN
     PLATFORM_MANAGER
+    UNKNOWN
+}
+
+// Status for User Accounts
+enum AccountStatus {
+    ACTIVE
+    SUSPENDED // Restricted account
+    CLOSED
 }
 
 enum BookingStatus {
     PENDING // Home owner requested, cleaner hasn't confirmed
-    CONFIRMED // Cleaner confirmed
+    CONFIRMED // Cleaner accepted
+    REJECTED // Cleaner rejected
     COMPLETED // Job done
     CANCELLED_BY_OWNER
     CANCELLED_BY_CLEANER
-    REJECTED // Cleaner declined the request
+    IN_PROGRESS
 }
+
+// Basic payment status
+enum PaymentStatus {
+    PENDING
+    PAID
+    FAILED
+    REFUNDED
+}
+
+// Notification types
+enum NotificationType {
+    BOOKING_REQUESTED
+    BOOKING_CONFIRMED
+    BOOKING_REJECTED
+    BOOKING_CANCELLED_OWNER
+    BOOKING_CANCELLED_CLEANER
+    BOOKING_COMPLETED_OWNER // Prompt for review/payment
+    BOOKING_COMPLETED_CLEANER // Notify job done
+    PAYMENT_DUE
+    PAYMENT_RECEIVED
+    REVIEW_RECEIVED
+    CLEANER_ARRIVED // Requires location tracking/manual trigger
+    UPCOMING_APPOINTMENT
+    ACCOUNT_VERIFIED
+    ACCOUNT_SUSPENDED
+    COMPLAINT_RECEIVED // Admin/Manager only
+    SYSTEM_ALERT // Admin/Manager only
+    WELCOME // Example general notification
+}
+
+// --- Core User Models ---
 
 model User {
-    id               String            @id @default(cuid())
-    name             String?
-    email            String?           @unique
-    emailVerified    DateTime?
-    image            String?
-    role             Role              @default(HOME_OWNER)
-    createdAt        DateTime          @default(now())
-    updatedAt        DateTime          @updatedAt
-    posts            Post[] // Placeholder model TODO: Remove this
-    // Profile relations (optional one-to-one)
-    CleanerProfile   CleanerProfile?
-    HomeOwnerProfile HomeOwnerProfile?
+    id                String            @id @default(cuid())
+    name              String?
+    email             String?           @unique
+    emailVerified     DateTime?
+    image             String?
+    //
+    role              Role              @default(UNKNOWN)
+    status            AccountStatus     @default(ACTIVE)
+    createdAt         DateTime          @default(now())
+    // Profile relations
+    CleanerProfile    CleanerProfile?
+    HomeOwnerProfile  HomeOwnerProfile?
     // NextAuth
-    accounts         Account[]
-    sessions         Session[]
+    accounts          Account[]
+    sessions          Session[]
+    // App-specific relations
+    bookingsAsOwner   Booking[]         @relation("HomeOwnerBookings")
+    bookingsAsCleaner Booking[]         @relation("CleanerBookings")
+    shortlistsMade    Shortlist[]       @relation("HomeOwnerShortlists") // Shortlists this user (owner) created
+    shortlistedBy     Shortlist[]       @relation("CleanerShortlistedBy") // Users (owners) who shortlisted this user (cleaner)
+    reviewsGiven      Review[]          @relation("ReviewsGiven") // Reviews this user wrote
+    reviewsReceived   Review[]          @relation("ReviewsReceived") // Reviews written about this user
+    notifications     Notification[]    @relation("UserNotifications")
+    profileViewsMade  ProfileView[]     @relation("ViewerViews") // Profiles this user viewed
+    profileViews      ProfileView[]     @relation("CleanerViews") // Views received on this user's (cleaner) profile
 
     @@index([role])
-}
-
-model Post {
-    id          Int      @id @default(autoincrement())
-    name        String
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-    createdBy   User     @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
+    @@index([status])
 }
 
 // --------------------------------------------------------------------------------------
@@ -66,57 +107,165 @@ model Post {
 // --------------------------------------------------------------------------------------
 model CleanerProfile {
     id              String    @id @default(cuid())
-    userId          String    @unique // One-to-one with User
+    userId          String    @unique
     user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-    bio             String? // @db.Text potentially
-    yearsExperience Int?
-    hourlyRate      Int? // Example pricing field, could be more complex
-    servicesOffered Service[]
-    // Add other cleaner-specific fields: e.g., travel radius, certifications etc.
+    isVerified      Boolean   @default(false)
     createdAt       DateTime  @default(now())
     updatedAt       DateTime  @updatedAt
+    //
+    askingPrice     Decimal
+    avalibility     String? // Short description on avalibility
+    //
+    bio             String
+    yearsExperience Int
+    age             Int?
+    //
+    servicesOffered Service[]
+
+    @@index([userId])
+    @@index([isVerified])
 }
 
 model HomeOwnerProfile {
     id          String   @id @default(cuid())
-    userId      String   @unique // One-to-one with User
+    userId      String   @unique
     user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    address     String? // Simple address for now
-    preferences String? // e.g., pet friendly, specific cleaning products @db.Text
+    isVerified  Boolean  @default(false)
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
+    //
+    address     String? // Assume only one address
+    preferences String?
+
+    @@index([userId])
+    @@index([isVerified])
 }
 
 // --------------------------------------------------------------------------------------
-//                                      Services
+//                                      Services & Categories
 // --------------------------------------------------------------------------------------
-model Service {
-    id               Int             @id @default(autoincrement())
-    name             String
-    description      String? // @db.Text potentially
-    price            Decimal // Price for this specific service
-    durationEstimate Int? // Estimated duration in minutes
-    isActive         Boolean         @default(true) // Cleaner can toggle service availability
-    createdAt        DateTime        @default(now())
-    updatedAt        DateTime        @updatedAt
-    // Relation to Category
-    category         ServiceCategory @relation(fields: [categoryId], references: [id])
-    categoryId       Int
-    // Relation to Cleaner
-    cleaner          CleanerProfile  @relation(fields: [cleanerProfileId], references: [id], onDelete: Cascade) // Service deleted if cleaner deleted
-    cleanerProfileId String
-
-    @@index([cleanerProfileId])
-    @@index([categoryId])
-}
-
 model ServiceCategory {
     id          Int       @id @default(autoincrement())
     name        String    @unique
     description String?
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt
-    services    Service[] // Relation to services within this category
+    services    Service[]
+}
+
+model Service {
+    id               Int             @id @default(autoincrement())
+    name             String
+    description      String?
+    isActive         Boolean         @default(true)
+    createdAt        DateTime        @default(now())
+    updatedAt        DateTime        @updatedAt
+    //
+    category         ServiceCategory @relation(fields: [categoryId], references: [id])
+    categoryId       Int
+    //
+    cleanerProfile   CleanerProfile  @relation(fields: [cleanerProfileId], references: [id], onDelete: Cascade)
+    cleanerProfileId String
+    //
+    bookings         Booking[]
+
+    @@index([cleanerProfileId])
+    @@index([categoryId])
+}
+
+// --------------------------------------------------------------------------------------
+//                                      Interactions
+// --------------------------------------------------------------------------------------
+
+model Booking {
+    id              Int            @id @default(autoincrement())
+    bookingTime     DateTime // Date start
+    priceAtBooking  Decimal // Price agreed upon
+    durationMinutes Int? // duration of booking
+    notes           String?
+    // Status
+    status          BookingStatus  @default(PENDING)
+    paymentStatus   PaymentStatus  @default(PENDING)
+    //
+    createdAt       DateTime       @default(now())
+    updatedAt       DateTime       @updatedAt
+    homeOwner       User           @relation("HomeOwnerBookings", fields: [homeOwnerId], references: [id], onDelete: Cascade)
+    homeOwnerId     String
+    cleaner         User           @relation("CleanerBookings", fields: [cleanerId], references: [id], onDelete: Cascade)
+    cleanerId       String
+    service         Service        @relation(fields: [serviceId], references: [id], onDelete: Restrict) // Preserve booking history if service deleted
+    serviceId       Int
+    // Relations to other models
+    reviews         Review[] // A booking can have reviews (likely 1 owner->cleaner, maybe 1 cleaner->owner)
+    notifications   Notification[] // Notifications related to this booking
+
+    @@index([homeOwnerId, createdAt])
+    @@index([cleanerId, createdAt])
+    @@index([serviceId])
+    @@index([status])
+    @@index([bookingTime])
+    @@index([paymentStatus])
+}
+
+model Shortlist {
+    id          Int      @id @default(autoincrement())
+    createdAt   DateTime @default(now())
+    homeOwner   User     @relation("HomeOwnerShortlists", fields: [homeOwnerId], references: [id], onDelete: Cascade)
+    homeOwnerId String
+    cleaner     User     @relation("CleanerShortlistedBy", fields: [cleanerId], references: [id], onDelete: Cascade)
+    cleanerId   String
+
+    @@unique([homeOwnerId, cleanerId])
+    @@index([homeOwnerId])
+    @@index([cleanerId])
+}
+
+model ProfileView {
+    id        Int      @id @default(autoincrement())
+    viewedAt  DateTime @default(now())
+    viewer    User     @relation("ViewerViews", fields: [viewerId], references: [id], onDelete: Cascade)
+    viewerId  String
+    cleaner   User     @relation("CleanerViews", fields: [cleanerId], references: [id], onDelete: Cascade)
+    cleanerId String
+
+    @@index([viewerId])
+    @@index([cleanerId, viewedAt]) // Index for counting views per cleaner
+}
+
+model Review {
+    id         Int      @id @default(autoincrement())
+    rating     Int // e.g., 1-5 stars
+    comment    String?
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+    // Link review to a specific job for context
+    booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+    bookingId  Int      @unique // Enforce one review (per direction) per booking?
+    // Who wrote the review
+    reviewer   User     @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+    reviewerId String
+    // Who is being reviewed
+    reviewee   User     @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+    revieweeId String
+
+    @@index([bookingId])
+    @@index([reviewerId])
+    @@index([revieweeId, createdAt]) // To easily fetch reviews received by a user
+}
+
+model Notification {
+    id          String           @id @default(cuid())
+    message     String
+    isRead      Boolean          @default(false)
+    type        NotificationType
+    createdAt   DateTime         @default(now())
+    recipient   User             @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+    recipientId String
+    booking     Booking?         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+    bookingId   Int?
+
+    @@index([recipientId, createdAt(sort: Desc)])
+    @@index([recipientId, isRead])
 }
 
 // --------------------------------------------------------------------------------------
