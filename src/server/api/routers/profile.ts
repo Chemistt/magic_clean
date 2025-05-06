@@ -3,24 +3,27 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
-// Zod schema for Cleaner Profile update input
 const cleanerProfileInputSchema = z.object({
 	bio: z.string().optional(),
 	yearsExperience: z.number().int().min(0).optional(),
-	hourlyRate: z.number().positive().optional(), // Use number for transport, Prisma handles Decimal
-	// Add other fields as needed
+	askingPrice: z.number().positive().optional(), // For Decimal in Prisma
+	avalibility: z.string().optional(),
+	age: z.number().int().positive().optional(),
+	isVerified: z.boolean().optional(),
 });
 
-// Zod schema for Home Owner Profile update input
 const homeOwnerProfileInputSchema = z.object({
 	address: z.string().optional(),
 	preferences: z.string().optional(),
-	// Add other fields as needed
+	isVerified: z.boolean().optional(),
 });
 
 export const profileRouter = createTRPCRouter({
 	// Procedure to get the current user's profile
 	get: protectedProcedure.query(async ({ ctx }) => {
+		console.log(
+			"Fetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profile"
+		);
 		const userId = ctx.session.user.id;
 		const userWithProfile = await ctx.db.user.findUnique({
 			where: { id: userId },
@@ -55,14 +58,18 @@ export const profileRouter = createTRPCRouter({
 				where: { userId: userId },
 				create: {
 					userId: userId,
-					...input,
-					// Convert number back to Decimal for Prisma if needed,
-					// Prisma client often handles this conversion automatically
-					// hourlyRate: input.hourlyRate ? new Prisma.Decimal(input.hourlyRate) : undefined,
+					bio: input.bio ?? "", // Bio is required in schema
+					askingPrice: input.askingPrice ?? 0, // Required in schema, default to 0
+					yearsExperience: input.yearsExperience ?? 0, // Required in schema
+					avalibility: input.avalibility,
+					age: input.age,
 				},
 				update: {
-					...input,
-					// hourlyRate: input.hourlyRate ? new Prisma.Decimal(input.hourlyRate) : undefined,
+					bio: input.bio,
+					askingPrice: input.askingPrice,
+					yearsExperience: input.yearsExperience,
+					avalibility: input.avalibility,
+					age: input.age,
 				},
 			});
 			return profile;
@@ -86,10 +93,14 @@ export const profileRouter = createTRPCRouter({
 				where: { userId: userId },
 				create: {
 					userId: userId,
-					...input,
+					address: input.address,
+					preferences: input.preferences,
+					isVerified: input.isVerified ?? false,
 				},
 				update: {
-					...input,
+					address: input.address,
+					preferences: input.preferences,
+					isVerified: input.isVerified,
 				},
 			});
 			return profile;

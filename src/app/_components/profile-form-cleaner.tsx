@@ -1,6 +1,5 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
 import { Button } from "@components/ui/button";
 import {
 	Card,
@@ -13,7 +12,6 @@ import {
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -42,14 +40,12 @@ const schema = z.object({
 	cleanerProfile: z.object({
 		bio: z.string().optional(),
 		yearsExperience: z.number().int().min(0).optional(),
-		hourlyRate: z.number().int().positive().optional(),
+		askingPrice: z.number().positive().optional(), // For Decimal in Prisma
+		avalibility: z.string().optional(),
+		age: z.number().int().positive().optional(),
+		isVerified: z.boolean().optional(),
 	}),
 });
-
-// type UserWithProfile = User & {
-// 	HomeOwnerProfile: HomeOwnerProfile | null;
-// 	CleanerProfile: CleanerProfile | null;
-// };
 
 export function ProfileCleanerForm() {
 	const [user] = api.profile.get.useSuspenseQuery();
@@ -81,117 +77,34 @@ export function ProfileCleanerForm() {
 			cleanerProfile: {
 				bio: user.CleanerProfile?.bio ?? "",
 				yearsExperience: user.CleanerProfile?.yearsExperience ?? 0,
-				hourlyRate: user.CleanerProfile?.hourlyRate ?? 0,
+				askingPrice: user.CleanerProfile?.askingPrice.toNumber() ?? 0,
+				avalibility: user.CleanerProfile?.avalibility ?? "",
+				age: user.CleanerProfile?.age ?? 0,
+				isVerified: user.CleanerProfile?.isVerified,
 			},
 		},
 	});
 
 	async function onSubmit(values: z.infer<typeof schema>) {
 		setIsLoading(true);
-
 		try {
 			await updateCleanerProfileMutation.mutateAsync(values.cleanerProfile);
-
-			// Note: Basic user info (name, email) would need a separate mutation
-			// which isn't in the provided tRPC router
 		} catch (error) {
 			console.log("[CLIENT] Error updating profile:", error);
-			// Error handling is done in the mutation callbacks
 		} finally {
 			setIsLoading(false);
 		}
 	}
 
-	const initials = user.name
-		? user.name
-				.split(" ")
-				.map((n) => n[0])
-				.join("")
-		: "U";
-
 	return (
 		<Form {...form}>
-			{/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
-			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+			<form onSubmit={void form.handleSubmit(onSubmit)} className="space-y-8">
 				<Card>
 					<CardHeader>
-						<CardTitle>Basic Information</CardTitle>
-						<CardDescription>Update your personal information</CardDescription>
+						<CardTitle>Cleaner Details</CardTitle>
+						<CardDescription>Manage your job details here</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-6">
-						<div className="flex items-center gap-6">
-							<Avatar className="h-20 w-20">
-								<AvatarImage src={user.image ?? ""} alt={user.name ?? "User"} />
-								<AvatarFallback className="text-lg">{initials}</AvatarFallback>
-							</Avatar>
-							<div>
-								<h3 className="text-lg font-medium">{user.name}</h3>
-								<p className="text-muted-foreground text-sm">{user.role}</p>
-							</div>
-						</div>
-
-						<div className="grid gap-4 md:grid-cols-2">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Name</FormLabel>
-										<FormControl>
-											<Input placeholder="Your name" {...field} readOnly />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="email"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Email</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="your.email@example.com"
-												{...field}
-												readOnly
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="image"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Profile Image URL</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="https://example.com/image.jpg"
-												{...field}
-												readOnly
-											/>
-										</FormControl>
-										<FormDescription>
-											Enter a URL for your profile image
-										</FormDescription>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-						<div className="text-muted-foreground text-sm">
-							Note: Basic user information updates are not currently supported
-							through this form.
-						</div>
-					</CardContent>
-
-					<CardContent className="border-t pt-6">
-						<h3 className="mb-4 text-lg font-medium">Cleaner Details</h3>
+					<CardContent>
 						<div className="grid gap-4">
 							<FormField
 								control={form.control}
@@ -237,7 +150,7 @@ export function ProfileCleanerForm() {
 
 								<FormField
 									control={form.control}
-									name="cleanerProfile.hourlyRate"
+									name="cleanerProfile.askingPrice"
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Hourly Rate ($)</FormLabel>
@@ -260,6 +173,49 @@ export function ProfileCleanerForm() {
 									)}
 								/>
 							</div>
+
+							<FormField
+								control={form.control}
+								name="cleanerProfile.avalibility"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Availability</FormLabel>
+										<FormControl>
+											<Textarea
+												placeholder="Provide your general availability (e.g., weekdays 9-5, weekends only, etc.)"
+												className="min-h-[80px]"
+												{...field}
+												value={field.value ?? ""}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="cleanerProfile.age"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Age</FormLabel>
+										<FormControl>
+											<Input
+												type="number"
+												min="18"
+												{...field}
+												value={field.value ?? ""}
+												onChange={(error) => {
+													field.onChange(
+														Number.parseInt(error.target.value) || undefined
+													);
+												}}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 						</div>
 					</CardContent>
 
