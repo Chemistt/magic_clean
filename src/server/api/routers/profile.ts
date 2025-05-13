@@ -9,13 +9,11 @@ const cleanerProfileInputSchema = z.object({
 	askingPrice: z.number().positive().optional(), // For Decimal in Prisma
 	avalibility: z.string().optional(),
 	age: z.number().int().positive().optional(),
-	isVerified: z.boolean().optional(),
 });
 
 const homeOwnerProfileInputSchema = z.object({
 	address: z.string().optional(),
 	preferences: z.string().optional(),
-	isVerified: z.boolean().optional(),
 });
 
 export const profileRouter = createTRPCRouter({
@@ -43,13 +41,12 @@ export const profileRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
 
-			// 1. Verify user has the CLEANER role
 			const user = await ctx.db.user.findUnique({ where: { id: userId } });
 			if (user?.role !== Role.CLEANER) {
 				throw new Error("User is not a cleaner.");
 			}
 
-			// 2. Upsert (update or create if missing) the cleaner profile
+			// Upsert (update or create if missing) the cleaner profile
 			// Using upsert is robust in case the initialization step failed or was skipped
 			const profile = await ctx.db.cleanerProfile.upsert({
 				where: { userId: userId },
@@ -60,6 +57,7 @@ export const profileRouter = createTRPCRouter({
 					yearsExperience: input.yearsExperience ?? 0, // Required in schema
 					avalibility: input.avalibility,
 					age: input.age,
+					isVerified: true,
 				},
 				update: {
 					bio: input.bio,
@@ -77,27 +75,23 @@ export const profileRouter = createTRPCRouter({
 		.input(homeOwnerProfileInputSchema)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
-
-			// 1. Verify user has the HOME_OWNER role (or allow if they are switching back?)
-			// Adjust logic based on whether roles are fixed or changeable
 			const user = await ctx.db.user.findUnique({ where: { id: userId } });
 			if (user?.role !== Role.HOME_OWNER) {
 				throw new Error("User is not a home owner.");
 			}
 
-			// 2. Upsert the home owner profile
+			// Upsert the home owner profile
 			const profile = await ctx.db.homeOwnerProfile.upsert({
 				where: { userId: userId },
 				create: {
 					userId: userId,
 					address: input.address,
 					preferences: input.preferences,
-					isVerified: input.isVerified ?? false,
+					isVerified: true,
 				},
 				update: {
 					address: input.address,
 					preferences: input.preferences,
-					isVerified: input.isVerified,
 				},
 			});
 			return profile;

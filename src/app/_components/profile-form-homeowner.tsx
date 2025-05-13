@@ -28,14 +28,8 @@ import { Textarea } from "@/app/_components/ui/textarea";
 import { api } from "@/trpc/react";
 
 const schema = z.object({
-	name: z.string().min(1, { message: "Name is required" }),
-	email: z.string().email({ message: "Invalid email address" }),
-	image: z.string(),
-	homeOwnerProfile: z.object({
-		address: z.string().optional(),
-		preferences: z.string().optional(),
-		isVerified: z.boolean().optional(),
-	}),
+	address: z.string().optional(),
+	preferences: z.string().optional(),
 });
 
 export function ProfileHomeOwnerForm() {
@@ -62,23 +56,25 @@ export function ProfileHomeOwnerForm() {
 	const form = useForm<z.infer<typeof schema>>({
 		resolver: zodResolver(schema),
 		defaultValues: {
-			name: user.name ?? "",
-			email: user.email ?? "",
-			image: user.image ?? "",
-			homeOwnerProfile: {
-				address: user.HomeOwnerProfile?.address ?? "",
-				preferences: user.HomeOwnerProfile?.preferences ?? "",
-				isVerified: user.HomeOwnerProfile?.isVerified,
-			},
+			address: user.HomeOwnerProfile?.address ?? "",
+			preferences: user.HomeOwnerProfile?.preferences ?? "",
 		},
 	});
 
 	async function onSubmit(values: z.infer<typeof schema>) {
 		setIsLoading(true);
 		try {
-			await updateHomeOwnerProfileMutation.mutateAsync(values.homeOwnerProfile);
+			console.log("[CLIENT] Submitting form with values:", values);
+			const result = await updateHomeOwnerProfileMutation.mutateAsync({
+				...values,
+			});
+			console.log("[CLIENT] Update successful:", result);
 		} catch (error) {
-			console.log("[CLIENT] Error updating profile:", error);
+			console.error("[CLIENT] Error updating profile:", error);
+			toast("Error", {
+				description:
+					error instanceof Error ? error.message : "Failed to update profile",
+			});
 		} finally {
 			setIsLoading(false);
 		}
@@ -86,7 +82,13 @@ export function ProfileHomeOwnerForm() {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={void form.handleSubmit(onSubmit)} className="space-y-8">
+			<form
+				onSubmit={(event) => {
+					event.preventDefault();
+					void form.handleSubmit(onSubmit)(event);
+				}}
+				className="space-y-8"
+			>
 				<Card>
 					<CardHeader>
 						<CardTitle>Home Owner Details</CardTitle>
@@ -96,7 +98,7 @@ export function ProfileHomeOwnerForm() {
 						<div className="grid gap-4">
 							<FormField
 								control={form.control}
-								name="homeOwnerProfile.address"
+								name="address"
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Address</FormLabel>
@@ -115,7 +117,7 @@ export function ProfileHomeOwnerForm() {
 
 							<FormField
 								control={form.control}
-								name="homeOwnerProfile.preferences"
+								name="preferences"
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Cleaning Preferences</FormLabel>

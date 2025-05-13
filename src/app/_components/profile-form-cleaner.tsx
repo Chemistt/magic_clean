@@ -34,17 +34,12 @@ import { z } from "zod";
 import { api } from "@/trpc/react";
 
 const schema = z.object({
-	name: z.string().min(1, { message: "Name is required" }),
-	email: z.string().email({ message: "Invalid email address" }),
-	image: z.string(),
-	cleanerProfile: z.object({
-		bio: z.string().optional(),
-		yearsExperience: z.number().int().min(0).optional(),
-		askingPrice: z.number().positive().optional(), // For Decimal in Prisma
-		avalibility: z.string().optional(),
-		age: z.number().int().positive().optional(),
-		isVerified: z.boolean().optional(),
-	}),
+	bio: z.string().optional(),
+	yearsExperience: z.number().int().min(0).optional(),
+	askingPrice: z.number().positive().optional(), // For Decimal in Prisma
+	avalibility: z.string().optional(),
+	age: z.number().int().positive().optional(),
+	isVerified: z.boolean().optional(),
 });
 
 export function ProfileCleanerForm() {
@@ -71,24 +66,21 @@ export function ProfileCleanerForm() {
 	const form = useForm<z.infer<typeof schema>>({
 		resolver: zodResolver(schema),
 		defaultValues: {
-			name: user.name ?? "",
-			email: user.email ?? "",
-			image: user.image ?? "",
-			cleanerProfile: {
-				bio: user.CleanerProfile?.bio ?? "",
-				yearsExperience: user.CleanerProfile?.yearsExperience ?? 0,
-				askingPrice: user.CleanerProfile?.askingPrice.toNumber() ?? 0,
-				avalibility: user.CleanerProfile?.avalibility ?? "",
-				age: user.CleanerProfile?.age ?? 0,
-				isVerified: user.CleanerProfile?.isVerified,
-			},
+			bio: user.CleanerProfile?.bio ?? "",
+			yearsExperience: user.CleanerProfile?.yearsExperience ?? 0,
+			askingPrice: user.CleanerProfile?.askingPrice.toNumber() ?? 0,
+			avalibility: user.CleanerProfile?.avalibility ?? "",
+			age: user.CleanerProfile?.age ?? 0,
+			isVerified: user.CleanerProfile?.isVerified,
 		},
 	});
 
 	async function onSubmit(values: z.infer<typeof schema>) {
 		setIsLoading(true);
 		try {
-			await updateCleanerProfileMutation.mutateAsync(values.cleanerProfile);
+			await updateCleanerProfileMutation.mutateAsync({
+				...values,
+			});
 		} catch (error) {
 			console.log("[CLIENT] Error updating profile:", error);
 		} finally {
@@ -98,7 +90,13 @@ export function ProfileCleanerForm() {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={void form.handleSubmit(onSubmit)} className="space-y-8">
+			<form
+				onSubmit={(event) => {
+					event.preventDefault();
+					void form.handleSubmit(onSubmit)(event);
+				}}
+				className="space-y-8"
+			>
 				<Card>
 					<CardHeader>
 						<CardTitle>Cleaner Details</CardTitle>
@@ -108,7 +106,7 @@ export function ProfileCleanerForm() {
 						<div className="grid gap-4">
 							<FormField
 								control={form.control}
-								name="cleanerProfile.bio"
+								name="bio"
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Bio</FormLabel>
@@ -128,7 +126,7 @@ export function ProfileCleanerForm() {
 							<div className="grid gap-4 md:grid-cols-2">
 								<FormField
 									control={form.control}
-									name="cleanerProfile.yearsExperience"
+									name="yearsExperience"
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Years of Experience</FormLabel>
@@ -150,7 +148,7 @@ export function ProfileCleanerForm() {
 
 								<FormField
 									control={form.control}
-									name="cleanerProfile.askingPrice"
+									name="askingPrice"
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Hourly Rate ($)</FormLabel>
@@ -176,7 +174,7 @@ export function ProfileCleanerForm() {
 
 							<FormField
 								control={form.control}
-								name="cleanerProfile.avalibility"
+								name="avalibility"
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Availability</FormLabel>
@@ -195,7 +193,7 @@ export function ProfileCleanerForm() {
 
 							<FormField
 								control={form.control}
-								name="cleanerProfile.age"
+								name="age"
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Age</FormLabel>
