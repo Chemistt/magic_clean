@@ -10,7 +10,6 @@ import {
 import { WebVitals } from "@components/web-vitals";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
-import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 
 import { ReactScan } from "@/app/_components/react-scan-component.tsx";
@@ -33,27 +32,25 @@ export default function RootLayout({
 		<html lang="en" className={geist.variable} suppressHydrationWarning>
 			<ReactScan />
 			<body className="bg-background text-foreground scroll-smooth antialiased transition-colors">
-				<SessionProvider>
-					<ThemeProvider
-						attribute="class"
-						defaultTheme="system"
-						enableSystem
-						disableTransitionOnChange
-						scriptProps={{ "data-cdasync": "false" }}
-					>
-						<TRPCReactProvider>
-							<SidebarProvider>
-								<AppSidebar />
-								<SidebarInset>
-									<SiteHeader />
-									{children}
-									<Toaster expand richColors />
-								</SidebarInset>
-							</SidebarProvider>
-						</TRPCReactProvider>
-						<WebVitals />
-					</ThemeProvider>
-				</SessionProvider>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange
+					scriptProps={{ "data-cdasync": "false" }}
+				>
+					<TRPCReactProvider>
+						<SidebarProvider>
+							<AppSidebar />
+							<SidebarInset>
+								<SiteHeader />
+								{children}
+								<Toaster expand richColors />
+							</SidebarInset>
+						</SidebarProvider>
+					</TRPCReactProvider>
+					<WebVitals />
+				</ThemeProvider>
 			</body>
 		</html>
 	);
