@@ -13,7 +13,7 @@ import {
 	SidebarMenuItem,
 	SidebarRail,
 } from "@components/ui/sidebar";
-import { Command, Home, Settings, UserPen } from "lucide-react";
+import { Calendar, Command, Home, Settings, UserPen } from "lucide-react";
 import Link from "next/link";
 
 import { auth } from "@/server/auth";
@@ -27,6 +27,11 @@ const items = [
 		title: "Profile",
 		url: "/dashboard/profile",
 		icon: UserPen,
+	},
+	{
+		title: "Bookings",
+		url: "/dashboard/bookings",
+		icon: Calendar,
 	},
 	{
 		title: "Settings",

@@ -21,9 +21,6 @@ const homeOwnerProfileInputSchema = z.object({
 export const profileRouter = createTRPCRouter({
 	// Procedure to get the current user's profile
 	get: protectedProcedure.query(async ({ ctx }) => {
-		console.log(
-			"Fetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profileFetching user profile"
-		);
 		const userId = ctx.session.user.id;
 		const userWithProfile = await ctx.db.user.findUnique({
 			where: { id: userId },
@@ -105,4 +102,16 @@ export const profileRouter = createTRPCRouter({
 			});
 			return profile;
 		}),
+
+	getAllCleaners: protectedProcedure.query(async ({ ctx }) => {
+		const cleaners = await ctx.db.user.findMany({
+			where: {
+				role: Role.CLEANER,
+			},
+			include: {
+				CleanerProfile: true,
+			},
+		});
+		return cleaners;
+	}),
 });
