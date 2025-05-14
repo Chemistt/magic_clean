@@ -13,6 +13,7 @@ import { Geist } from "next/font/google";
 import { Toaster } from "sonner";
 
 import { ReactScan } from "@/app/_components/react-scan-component.tsx";
+import { auth } from "@/server/auth";
 import { TRPCReactProvider } from "@/trpc/react";
 export const metadata: Metadata = {
 	title: "MAGIC CLEAN",
@@ -25,9 +26,11 @@ const geist = Geist({
 	variable: "--font-geist-sans",
 });
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
+	const session = await auth();
+
 	return (
 		<html lang="en" className={geist.variable} suppressHydrationWarning>
 			<ReactScan />
@@ -41,7 +44,7 @@ export default function RootLayout({
 				>
 					<TRPCReactProvider>
 						<SidebarProvider>
-							<AppSidebar />
+							<AppSidebar session={session} />
 							<SidebarInset>
 								<SiteHeader />
 								{children}

@@ -1,3 +1,5 @@
+"use client";
+
 import { NavUser } from "@components/nav-user";
 import { ModeToggle } from "@components/theme-dropdown";
 import {
@@ -15,8 +17,8 @@ import {
 } from "@components/ui/sidebar";
 import { Calendar, Command, Home, Settings, UserPen } from "lucide-react";
 import Link from "next/link";
+import { type Session } from "next-auth";
 
-import { auth } from "@/server/auth";
 const items = [
 	{
 		title: "Home",
@@ -40,10 +42,11 @@ const items = [
 	},
 ];
 
-export async function AppSidebar({
-	...props
-}: React.ComponentProps<typeof Sidebar>) {
-	const session = await auth();
+type AppSidebarProps = {
+	session: Session | null;
+} & React.ComponentProps<typeof Sidebar>;
+
+export function AppSidebar({ session, ...props }: AppSidebarProps) {
 	const userProperty = session
 		? {
 				name: session.user.name ?? "User",
