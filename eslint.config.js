@@ -24,7 +24,7 @@ const eslintConfig = tseslint.config(
 	eslintReact.configs["recommended-type-checked"],
 	eslintConfigPrettier,
 	{
-		ignores: ["coverage", "node_modules", ".next", "src/app/_components/ui/**"],
+		ignores: ["coverage", "node_modules", ".next", "src/components/ui/**"],
 	},
 	{
 		plugins: { "simple-import-sort": simpleImportSort },

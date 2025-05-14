@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { Button } from "@/app/_components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -15,7 +15,7 @@ import {
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from "@/app/_components/ui/card";
+} from "@/components/ui/card";
 import {
 	Form,
 	FormControl,
@@ -23,8 +23,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/app/_components/ui/form";
-import { Textarea } from "@/app/_components/ui/textarea";
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/trpc/react";
 
 const schema = z.object({

@@ -1,14 +1,9 @@
-import { ProfileAccountForm } from "@components/profile-account-form";
-import { ProfileCleanerForm } from "@components/profile-form-cleaner";
-import { ProfileHomeOwnerForm } from "@components/profile-form-homeowner";
 import { Role } from "@prisma/client";
 
-import {
-	Tabs,
-	TabsContent,
-	TabsList,
-	TabsTrigger,
-} from "@/app/_components/ui/tabs";
+import { ProfileAccountForm } from "@/components/profile-account-form";
+import { ProfileCleanerForm } from "@/components/profile-form-cleaner";
+import { ProfileHomeOwnerForm } from "@/components/profile-form-homeowner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from "@/server/auth";
 import { api, HydrateClient } from "@/trpc/server";
 

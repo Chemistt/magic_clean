@@ -1,13 +1,17 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@components/ui/avatar";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@components/ui/card";
+} from "@/components/ui/card";
 import {
 	Form,
 	FormControl,
@@ -15,12 +19,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@components/ui/form";
-import { Input } from "@components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { api } from "@/trpc/react";
 
 const schema = z.object({

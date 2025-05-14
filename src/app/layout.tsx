@@ -1,18 +1,18 @@
 import "@/styles/globals.css";
 
-import { SiteHeader } from "@components/app-header";
-import { AppSidebar } from "@components/app-sidebar";
-import { ThemeProvider } from "@components/theme-provider";
-import {
-	SidebarInset,
-	SidebarProvider /*, SidebarTrigger*/,
-} from "@components/ui/sidebar";
-import { WebVitals } from "@components/web-vitals";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Toaster } from "sonner";
 
-import { ReactScan } from "@/app/_components/react-scan-component.tsx";
+import { SiteHeader } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ReactScan } from "@/components/react-scan-component.tsx";
+import { ThemeProvider } from "@/components/theme-provider";
+import {
+	SidebarInset,
+	SidebarProvider /*, SidebarTrigger*/,
+} from "@/components/ui/sidebar";
+import { WebVitals } from "@/components/web-vitals";
 import { auth } from "@/server/auth";
 import { TRPCReactProvider } from "@/trpc/react";
 export const metadata: Metadata = {

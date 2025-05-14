@@ -1,7 +1,11 @@
 "use client";
 
-import { NavUser } from "@components/nav-user";
-import { ModeToggle } from "@components/theme-dropdown";
+import { Calendar, Command, Home, Settings, UserPen } from "lucide-react";
+import Link from "next/link";
+import { type Session } from "next-auth";
+
+import { NavUser } from "@/components/nav-user";
+import { ModeToggle } from "@/components/theme-dropdown";
 import {
 	Sidebar,
 	SidebarContent,
@@ -14,10 +18,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarRail,
-} from "@components/ui/sidebar";
-import { Calendar, Command, Home, Settings, UserPen } from "lucide-react";
-import Link from "next/link";
-import { type Session } from "next-auth";
+} from "@/components/ui/sidebar";
 
 const items = [
 	{
