@@ -39,7 +39,6 @@ const schema = z.object({
 	askingPrice: z.number().positive().optional(), // For Decimal in Prisma
 	avalibility: z.string().optional(),
 	age: z.number().int().positive().optional(),
-	isVerified: z.boolean().optional(),
 });
 
 export function ProfileCleanerForm() {
@@ -68,10 +67,11 @@ export function ProfileCleanerForm() {
 		defaultValues: {
 			bio: user.CleanerProfile?.bio ?? "",
 			yearsExperience: user.CleanerProfile?.yearsExperience ?? 0,
-			askingPrice: user.CleanerProfile?.askingPrice.toNumber() ?? 0,
+			askingPrice: user.CleanerProfile?.askingPrice
+				? Number(user.CleanerProfile.askingPrice)
+				: 0,
 			avalibility: user.CleanerProfile?.avalibility ?? "",
 			age: user.CleanerProfile?.age ?? 0,
-			isVerified: user.CleanerProfile?.isVerified,
 		},
 	});
 
