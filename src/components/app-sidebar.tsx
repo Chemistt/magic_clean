@@ -1,5 +1,11 @@
-import { NavUser } from "@components/nav-user";
-import { ModeToggle } from "@components/theme-dropdown";
+"use client";
+
+import { Calendar, Command, Home, Settings, UserPen } from "lucide-react";
+import Link from "next/link";
+import { type Session } from "next-auth";
+
+import { NavUser } from "@/components/nav-user";
+import { ModeToggle } from "@/components/theme-dropdown";
 import {
 	Sidebar,
 	SidebarContent,
@@ -12,11 +18,8 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarRail,
-} from "@components/ui/sidebar";
-import { Command, Home, Settings, UserPen } from "lucide-react";
-import Link from "next/link";
+} from "@/components/ui/sidebar";
 
-import { auth } from "@/server/auth";
 const items = [
 	{
 		title: "Home",
@@ -29,16 +32,22 @@ const items = [
 		icon: UserPen,
 	},
 	{
+		title: "Bookings",
+		url: "/dashboard/bookings",
+		icon: Calendar,
+	},
+	{
 		title: "Settings",
 		url: "#",
 		icon: Settings,
 	},
 ];
 
-export async function AppSidebar({
-	...props
-}: React.ComponentProps<typeof Sidebar>) {
-	const session = await auth();
+type AppSidebarProps = {
+	session: Session | null;
+} & React.ComponentProps<typeof Sidebar>;
+
+export function AppSidebar({ session, ...props }: AppSidebarProps) {
 	const userProperty = session
 		? {
 				name: session.user.name ?? "User",

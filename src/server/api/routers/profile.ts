@@ -3,19 +3,17 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
-// Zod schema for Cleaner Profile update input
 const cleanerProfileInputSchema = z.object({
 	bio: z.string().optional(),
 	yearsExperience: z.number().int().min(0).optional(),
-	hourlyRate: z.number().positive().optional(), // Use number for transport, Prisma handles Decimal
-	// Add other fields as needed
+	askingPrice: z.number().positive().optional(), // For Decimal in Prisma
+	avalibility: z.string().optional(),
+	age: z.number().int().positive().optional(),
 });
 
-// Zod schema for Home Owner Profile update input
 const homeOwnerProfileInputSchema = z.object({
 	address: z.string().optional(),
 	preferences: z.string().optional(),
-	// Add other fields as needed
 });
 
 export const profileRouter = createTRPCRouter({
@@ -43,26 +41,30 @@ export const profileRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
 
-			// 1. Verify user has the CLEANER role
 			const user = await ctx.db.user.findUnique({ where: { id: userId } });
 			if (user?.role !== Role.CLEANER) {
 				throw new Error("User is not a cleaner.");
 			}
 
-			// 2. Upsert (update or create if missing) the cleaner profile
+			// Upsert (update or create if missing) the cleaner profile
 			// Using upsert is robust in case the initialization step failed or was skipped
 			const profile = await ctx.db.cleanerProfile.upsert({
 				where: { userId: userId },
 				create: {
 					userId: userId,
-					...input,
-					// Convert number back to Decimal for Prisma if needed,
-					// Prisma client often handles this conversion automatically
-					// hourlyRate: input.hourlyRate ? new Prisma.Decimal(input.hourlyRate) : undefined,
+					bio: input.bio ?? "", // Bio is required in schema
+					askingPrice: input.askingPrice ?? 0, // Required in schema, default to 0
+					yearsExperience: input.yearsExperience ?? 0, // Required in schema
+					avalibility: input.avalibility,
+					age: input.age,
+					isVerified: true,
 				},
 				update: {
-					...input,
-					// hourlyRate: input.hourlyRate ? new Prisma.Decimal(input.hourlyRate) : undefined,
+					bio: input.bio,
+					askingPrice: input.askingPrice,
+					yearsExperience: input.yearsExperience,
+					avalibility: input.avalibility,
+					age: input.age,
 				},
 			});
 			return profile;
@@ -73,25 +75,37 @@ export const profileRouter = createTRPCRouter({
 		.input(homeOwnerProfileInputSchema)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
-
-			// 1. Verify user has the HOME_OWNER role (or allow if they are switching back?)
-			// Adjust logic based on whether roles are fixed or changeable
 			const user = await ctx.db.user.findUnique({ where: { id: userId } });
 			if (user?.role !== Role.HOME_OWNER) {
 				throw new Error("User is not a home owner.");
 			}
 
-			// 2. Upsert the home owner profile
+			// Upsert the home owner profile
 			const profile = await ctx.db.homeOwnerProfile.upsert({
 				where: { userId: userId },
 				create: {
 					userId: userId,
-					...input,
+					address: input.address,
+					preferences: input.preferences,
+					isVerified: true,
 				},
 				update: {
-					...input,
+					address: input.address,
+					preferences: input.preferences,
 				},
 			});
 			return profile;
 		}),
+
+	getAllCleaners: protectedProcedure.query(async ({ ctx }) => {
+		const cleaners = await ctx.db.user.findMany({
+			where: {
+				role: Role.CLEANER,
+			},
+			include: {
+				CleanerProfile: true,
+			},
+		});
+		return cleaners;
+	}),
 });

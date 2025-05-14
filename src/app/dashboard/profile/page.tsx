@@ -1,6 +1,9 @@
-import { ProfileCleanerForm } from "@components/profile-form-cleaner";
 import { Role } from "@prisma/client";
 
+import { ProfileAccountForm } from "@/components/profile-account-form";
+import { ProfileCleanerForm } from "@/components/profile-form-cleaner";
+import { ProfileHomeOwnerForm } from "@/components/profile-form-homeowner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from "@/server/auth";
 import { api, HydrateClient } from "@/trpc/server";
 
@@ -20,17 +23,52 @@ export default async function ProfilePage() {
 
 	const shouldShowCleanerForm = session.user.role === Role.CLEANER;
 	const shouldShowHomeOwnerForm = session.user.role === Role.HOME_OWNER;
-	const shouldShowAdminForm = session.user.role === Role.ADMIN;
-	const shouldShowPlatformManagerForm =
-		session.user.role === Role.PLATFORM_MANAGER;
+	// const shouldShowAdminForm = session.user.role === Role.ADMIN;
+	// const shouldShowPlatformManagerForm =
+	// 	session.user.role === Role.PLATFORM_MANAGER;
+	const tabs = [
+		{
+			value: "account",
+			label: "Account",
+		},
+	];
+
+	if (shouldShowCleanerForm) {
+		tabs.push({
+			value: "cleaner",
+			label: "Cleaner",
+		});
+	}
+	if (shouldShowHomeOwnerForm) {
+		tabs.push({
+			value: "home_owner",
+			label: "Home Owner",
+		});
+	}
 	return (
 		<HydrateClient>
-			<>
-				{shouldShowCleanerForm && <ProfileCleanerForm />}
-				{shouldShowHomeOwnerForm && <p>You are a home owner.</p>}
-				{shouldShowAdminForm && <p>You are an admin.</p>}
-				{shouldShowPlatformManagerForm && <p>You are a platform manager.</p>}
-			</>
+			<div className="mx-auto w-full max-w-3xl">
+				<Tabs
+					defaultValue="account"
+					orientation="vertical"
+					className="justify-center gap-4"
+				>
+					<TabsList className="grid w-full grid-cols-2">
+						{tabs.map((tab) => (
+							<TabsTrigger key={tab.value} value={tab.value}>
+								{tab.label}
+							</TabsTrigger>
+						))}
+					</TabsList>
+					{tabs.map((tab) => (
+						<TabsContent key={tab.value} value={tab.value}>
+							{tab.value === "account" && <ProfileAccountForm />}
+							{tab.value === "cleaner" && <ProfileCleanerForm />}
+							{tab.value === "home_owner" && <ProfileHomeOwnerForm />}
+						</TabsContent>
+					))}
+				</Tabs>
+			</div>
 		</HydrateClient>
 	);
 }

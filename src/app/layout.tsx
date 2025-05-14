@@ -1,20 +1,19 @@
 import "@/styles/globals.css";
 
-import { SiteHeader } from "@components/app-header";
-import { AppSidebar } from "@components/app-sidebar";
-import { ThemeProvider } from "@components/theme-provider";
+import { type Metadata } from "next";
+import { Geist } from "next/font/google";
+import { Toaster } from "sonner";
+
+import { SiteHeader } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ReactScan } from "@/components/react-scan-component.tsx";
+import { ThemeProvider } from "@/components/theme-provider";
 import {
 	SidebarInset,
 	SidebarProvider /*, SidebarTrigger*/,
-} from "@components/ui/sidebar";
-import { WebVitals } from "@components/web-vitals";
-import { Analytics } from "@vercel/analytics/react";
-import { type Metadata } from "next";
-import { Geist } from "next/font/google";
-import { SessionProvider } from "next-auth/react";
-import { Toaster } from "sonner";
-
-import { ReactScan } from "@/app/_components/react-scan-component.tsx";
+} from "@/components/ui/sidebar";
+import { WebVitals } from "@/components/web-vitals";
+import { auth } from "@/server/auth";
 import { TRPCReactProvider } from "@/trpc/react";
 export const metadata: Metadata = {
 	title: "MAGIC CLEAN",
@@ -27,35 +26,34 @@ const geist = Geist({
 	variable: "--font-geist-sans",
 });
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
+	const session = await auth();
+
 	return (
 		<html lang="en" className={geist.variable} suppressHydrationWarning>
 			<ReactScan />
 			<body className="bg-background text-foreground scroll-smooth antialiased transition-colors">
-				<SessionProvider>
-					<ThemeProvider
-						attribute="class"
-						defaultTheme="system"
-						enableSystem
-						disableTransitionOnChange
-						scriptProps={{ "data-cdasync": "false" }}
-					>
-						<TRPCReactProvider>
-							<SidebarProvider>
-								<AppSidebar />
-								<SidebarInset>
-									<SiteHeader />
-									{children}
-									<Toaster expand richColors />
-								</SidebarInset>
-							</SidebarProvider>
-						</TRPCReactProvider>
-						<WebVitals />
-						<Analytics />
-					</ThemeProvider>
-				</SessionProvider>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange
+					scriptProps={{ "data-cdasync": "false" }}
+				>
+					<TRPCReactProvider>
+						<SidebarProvider>
+							<AppSidebar session={session} />
+							<SidebarInset>
+								<SiteHeader />
+								{children}
+								<Toaster expand richColors />
+							</SidebarInset>
+						</SidebarProvider>
+					</TRPCReactProvider>
+					<WebVitals />
+				</ThemeProvider>
 			</body>
 		</html>
 	);

@@ -1,5 +1,8 @@
-// eslint-disable-next-line unicorn/no-abusive-eslint-disable
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
+/* eslint-disable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable unicorn/prefer-global-this */
+/* eslint-disable unicorn/no-useless-undefined */
 import * as React from "react";
 
 const MOBILE_BREAKPOINT = 768;
