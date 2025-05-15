@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { LoginButton } from "@/components/login-button";
 import { auth } from "@/server/auth";
 
-export default async function Home() {
+export default async function Dashboard() {
 	const session = await auth();
 
-	if (session) {
-		redirect("/dashboard");
+	// TODO: Move to middleware
+	if (!session) {
+		redirect("/");
 	}
 
 	return (
@@ -44,7 +44,7 @@ export default async function Home() {
 				<div className="flex flex-col items-center gap-2">
 					<div className="flex flex-col items-center justify-center gap-4">
 						<p className="text-center text-2xl text-white">
-							<LoginButton />
+							<span>Logged in as {session.user.name ?? "?"}</span>
 						</p>
 					</div>
 				</div>
