@@ -3,6 +3,7 @@ import { Role } from "@prisma/client";
 import { ProfileAccountForm } from "@/components/profile-account-form";
 import { ProfileCleanerForm } from "@/components/profile-form-cleaner";
 import { ProfileHomeOwnerForm } from "@/components/profile-form-homeowner";
+import { ProfileServicesCard } from "@/components/profile-services-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from "@/server/auth";
 import { api, HydrateClient } from "@/trpc/server";
@@ -26,6 +27,8 @@ export default async function ProfilePage() {
 	// const shouldShowAdminForm = session.user.role === Role.ADMIN;
 	// const shouldShowPlatformManagerForm =
 	// 	session.user.role === Role.PLATFORM_MANAGER;
+	// const shouldShowUnknownForm = session.user.role === Role.UNKNOWN;
+
 	const tabs = [
 		{
 			value: "account",
@@ -34,10 +37,16 @@ export default async function ProfilePage() {
 	];
 
 	if (shouldShowCleanerForm) {
-		tabs.push({
-			value: "cleaner",
-			label: "Cleaner",
-		});
+		tabs.push(
+			{
+				value: "cleaner",
+				label: "Cleaner",
+			},
+			{
+				value: "services",
+				label: "Services",
+			}
+		);
 	}
 	if (shouldShowHomeOwnerForm) {
 		tabs.push({
@@ -45,6 +54,7 @@ export default async function ProfilePage() {
 			label: "Home Owner",
 		});
 	}
+
 	return (
 		<HydrateClient>
 			<div className="mx-auto w-full max-w-3xl">
@@ -53,7 +63,7 @@ export default async function ProfilePage() {
 					orientation="vertical"
 					className="justify-center gap-4"
 				>
-					<TabsList className="grid w-full grid-cols-2">
+					<TabsList className={`grid w-full grid-cols-${String(tabs.length)}`}>
 						{tabs.map((tab) => (
 							<TabsTrigger key={tab.value} value={tab.value}>
 								{tab.label}
@@ -64,6 +74,7 @@ export default async function ProfilePage() {
 						<TabsContent key={tab.value} value={tab.value}>
 							{tab.value === "account" && <ProfileAccountForm />}
 							{tab.value === "cleaner" && <ProfileCleanerForm />}
+							{tab.value === "services" && <ProfileServicesCard />}
 							{tab.value === "home_owner" && <ProfileHomeOwnerForm />}
 						</TabsContent>
 					))}

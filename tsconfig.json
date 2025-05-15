@@ -10,6 +10,7 @@
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
 		"erasableSyntaxOnly": true,
+		"noErrorTruncation": true,
 
 		/* Strictness */
 		"strict": true,

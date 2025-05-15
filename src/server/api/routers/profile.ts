@@ -25,7 +25,15 @@ export const profileRouter = createTRPCRouter({
 		const profile = await ctx.db.user.findUnique({
 			where: { id: userId },
 			include: {
-				CleanerProfile: true,
+				CleanerProfile: {
+					include: {
+						servicesOffered: {
+							include: {
+								category: true,
+							},
+						},
+					},
+				},
 				HomeOwnerProfile: true,
 			},
 		});
@@ -34,6 +42,16 @@ export const profileRouter = createTRPCRouter({
 			throw new Error("User not found");
 		}
 
+		// convert askingPrice to number
+		if (profile.CleanerProfile) {
+			return {
+				...profile,
+				CleanerProfile: {
+					...profile.CleanerProfile,
+					askingPrice: profile.CleanerProfile.askingPrice.toNumber(),
+				},
+			};
+		}
 		return profile;
 	}),
 	// get all cleaners
@@ -41,13 +59,28 @@ export const profileRouter = createTRPCRouter({
 		const cleaners = await ctx.db.user.findMany({
 			where: {
 				role: Role.CLEANER,
+				CleanerProfile: { isNot: undefined },
 			},
 			include: {
 				CleanerProfile: true,
 			},
 		});
 
-		return cleaners;
+		return cleaners.map((cleaner) => {
+			if (!cleaner.CleanerProfile) {
+				return {
+					...cleaner,
+					CleanerProfile: undefined,
+				};
+			}
+			return {
+				...cleaner,
+				CleanerProfile: {
+					...cleaner.CleanerProfile,
+					askingPrice: cleaner.CleanerProfile.askingPrice.toNumber(),
+				},
+			};
+		});
 	}),
 	getSpecificCleanerProfile: protectedProcedure
 		.input(z.object({ id: z.string() }))
