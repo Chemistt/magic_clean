@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 import { api } from "@/trpc/react";
 
@@ -12,8 +13,9 @@ export function ProfileCleanerList() {
 			<h1 className="mb-6 text-2xl font-bold">Available Cleaners</h1>
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 				{cleaners.map((cleaner) => (
-					<div
+					<Link
 						key={cleaner.id}
+						href={`/dashboard/cleaners/${cleaner.id}`}
 						className="flex flex-col items-center rounded-lg border p-4 shadow-sm"
 					>
 						<div className="relative mb-3 h-24 w-24 overflow-hidden rounded-full">
@@ -33,7 +35,7 @@ export function ProfileCleanerList() {
 								<p>Rate: ${cleaner.CleanerProfile.askingPrice.toString()}/hr</p>
 							</div>
 						)}
-					</div>
+					</Link>
 				))}
 			</div>
 		</div>

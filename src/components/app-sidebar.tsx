@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Command, Home, Settings, UserPen } from "lucide-react";
+import { Calendar, Command, Home, UserPen, Users } from "lucide-react";
 import Link from "next/link";
 import { type Session } from "next-auth";
 
@@ -32,14 +32,14 @@ const items = [
 		icon: UserPen,
 	},
 	{
+		title: "Cleaners",
+		url: "/dashboard/cleaners",
+		icon: Users,
+	},
+	{
 		title: "Bookings",
 		url: "/dashboard/bookings",
 		icon: Calendar,
-	},
-	{
-		title: "Settings",
-		url: "#",
-		icon: Settings,
 	},
 ];
 

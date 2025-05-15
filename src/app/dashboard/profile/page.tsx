@@ -19,7 +19,7 @@ export default async function ProfilePage() {
 	}
 
 	// Prefetch user profile
-	void api.profile.get.prefetch();
+	void api.profile.getCurrentUserProfile.prefetch();
 
 	const shouldShowCleanerForm = session.user.role === Role.CLEANER;
 	const shouldShowHomeOwnerForm = session.user.role === Role.HOME_OWNER;

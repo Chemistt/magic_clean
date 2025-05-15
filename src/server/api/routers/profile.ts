@@ -17,37 +17,63 @@ const homeOwnerProfileInputSchema = z.object({
 });
 
 export const profileRouter = createTRPCRouter({
-	// Procedure to get the current user's profile
-	get: protectedProcedure.query(async ({ ctx }) => {
+	// get current user's profile
+	getCurrentUserProfile: protectedProcedure.query(async ({ ctx }) => {
 		const userId = ctx.session.user.id;
-		const userWithProfile = await ctx.db.user.findUnique({
+
+		// fetch and return the user object
+		const profile = await ctx.db.user.findUnique({
 			where: { id: userId },
 			include: {
-				CleanerProfile: true, // Include cleaner profile
-				HomeOwnerProfile: true, // Include home owner profile
+				CleanerProfile: true,
+				HomeOwnerProfile: true,
 			},
 		});
 
-		if (!userWithProfile) {
-			throw new Error("User not found"); // Should not happen for protected procedure
+		if (!profile) {
+			throw new Error("User not found");
 		}
 
-		// Return the user object which contains the role and nested profiles
-		return userWithProfile;
+		return profile;
 	}),
-	// Procedure to update Cleaner Profile details
-	updateCleanerProfile: protectedProcedure
+	// get all cleaners
+	getAllCleaners: protectedProcedure.query(async ({ ctx }) => {
+		const cleaners = await ctx.db.user.findMany({
+			where: {
+				role: Role.CLEANER,
+			},
+			include: {
+				CleanerProfile: true,
+			},
+		});
+
+		return cleaners;
+	}),
+	getSpecificCleanerProfile: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const cleaner = await ctx.db.user.findUnique({
+				where: { id: input.id },
+				include: {
+					CleanerProfile: true,
+				},
+			});
+
+			return cleaner;
+		}),
+	// mutate current user's profile (CLEANER)
+	upsertCleanerProfile: protectedProcedure
 		.input(cleanerProfileInputSchema)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
 
+			// check if user is a cleaner
 			const user = await ctx.db.user.findUnique({ where: { id: userId } });
 			if (user?.role !== Role.CLEANER) {
 				throw new Error("User is not a cleaner.");
 			}
 
 			// Upsert (update or create if missing) the cleaner profile
-			// Using upsert is robust in case the initialization step failed or was skipped
 			const profile = await ctx.db.cleanerProfile.upsert({
 				where: { userId: userId },
 				create: {
@@ -69,18 +95,19 @@ export const profileRouter = createTRPCRouter({
 			});
 			return profile;
 		}),
-
-	// Procedure to update Home Owner Profile details
-	updateHomeOwnerProfile: protectedProcedure
+	// mutate current user's profile (HOME OWNER)
+	upsertHomeOwnerProfile: protectedProcedure
 		.input(homeOwnerProfileInputSchema)
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session.user.id;
+
+			// check if user is a home owner
 			const user = await ctx.db.user.findUnique({ where: { id: userId } });
 			if (user?.role !== Role.HOME_OWNER) {
 				throw new Error("User is not a home owner.");
 			}
 
-			// Upsert the home owner profile
+			// Upsert (update or create if missing) the home owner profile
 			const profile = await ctx.db.homeOwnerProfile.upsert({
 				where: { userId: userId },
 				create: {
@@ -96,16 +123,4 @@ export const profileRouter = createTRPCRouter({
 			});
 			return profile;
 		}),
-
-	getAllCleaners: protectedProcedure.query(async ({ ctx }) => {
-		const cleaners = await ctx.db.user.findMany({
-			where: {
-				role: Role.CLEANER,
-			},
-			include: {
-				CleanerProfile: true,
-			},
-		});
-		return cleaners;
-	}),
 });
