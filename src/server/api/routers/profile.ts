@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 import { Role } from "@prisma/client";
 import { z } from "zod";
 
@@ -59,7 +60,7 @@ export const profileRouter = createTRPCRouter({
 		const cleaners = await ctx.db.user.findMany({
 			where: {
 				role: Role.CLEANER,
-				CleanerProfile: { isNot: undefined },
+				CleanerProfile: { isNot: null },
 			},
 			include: {
 				CleanerProfile: true,
@@ -70,7 +71,7 @@ export const profileRouter = createTRPCRouter({
 			if (!cleaner.CleanerProfile) {
 				return {
 					...cleaner,
-					CleanerProfile: undefined,
+					CleanerProfile: null,
 				};
 			}
 			return {
