@@ -59,11 +59,7 @@ export default async function ProfilePage() {
 	return (
 		<HydrateClient>
 			<div className="mx-auto w-full max-w-3xl">
-				<Tabs
-					defaultValue="account"
-					orientation="vertical"
-					className="justify-center gap-4"
-				>
+				<Tabs defaultValue="account" className="justify-center gap-4">
 					<TabsList
 						className={cn("grid w-full", `grid-cols-${String(tabs.length)}`)}
 					>

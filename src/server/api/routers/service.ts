@@ -6,8 +6,18 @@ export const serviceRouter = createTRPCRouter({
 	getCurrentUserServices: protectedProcedure.query(async ({ ctx }) => {
 		const userId = ctx.session.user.id;
 
+		const cleanerProfile = await ctx.db.cleanerProfile.findUnique({
+			where: { userId },
+		});
+
+		if (!cleanerProfile) {
+			throw new Error("Cleaner profile not found");
+		}
+
 		return ctx.db.service.findMany({
-			where: { cleanerProfileId: userId },
+			where: {
+				cleanerProfileId: cleanerProfile.id,
+			},
 			include: {
 				category: true,
 			},
@@ -16,13 +26,17 @@ export const serviceRouter = createTRPCRouter({
 	getCategories: protectedProcedure.query(async ({ ctx }) => {
 		return ctx.db.serviceCategory.findMany();
 	}),
+	getService: protectedProcedure
+		.input(z.object({ id: z.number().int() }))
+		.query(async ({ ctx, input }) => {
+			return ctx.db.service.findUnique({ where: { id: input.id } });
+		}),
 	upsertService: protectedProcedure
 		.input(
 			z.object({
 				id: z.number().int().optional(),
 				name: z.string(),
 				description: z.string(),
-				isActive: z.boolean(),
 				categoryId: z.number().int(),
 			})
 		)
@@ -37,15 +51,24 @@ export const serviceRouter = createTRPCRouter({
 				throw new Error("Cleaner profile not found");
 			}
 
-			return ctx.db.service.upsert({
-				where: { id: input.id },
-				update: {
+			if (input.id) {
+				return ctx.db.service.update({
+					where: {
+						id: input.id,
+						cleanerProfileId: cleanerProfile.id,
+					},
+					data: {
+						...input,
+						cleanerProfileId: cleanerProfile.id,
+					},
+				});
+			}
+
+			return ctx.db.service.create({
+				data: {
 					...input,
 					cleanerProfileId: cleanerProfile.id,
-				},
-				create: {
-					...input,
-					cleanerProfileId: cleanerProfile.id,
+					isActive: true,
 				},
 			});
 		}),

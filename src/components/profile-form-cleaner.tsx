@@ -211,7 +211,7 @@ export function ProfileCleanerForm() {
 							/>
 						</div>
 					</CardContent>
-					<CardFooter className="flex justify-end border-t pt-6">
+					<CardFooter className="flex justify-end">
 						<Button type="submit" className="" disabled={isLoading}>
 							{isLoading ? "Saving..." : "Save Changes"}
 						</Button>

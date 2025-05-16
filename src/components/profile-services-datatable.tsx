@@ -7,9 +7,20 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { CheckIcon, PencilIcon, TrashIcon, XIcon } from "lucide-react";
+import * as React from "react";
 import { z } from "zod";
 
+import { ProfileServiceDialog } from "@/components/profile-service-dialog";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
 	Table,
 	TableBody,
@@ -36,9 +47,25 @@ type ProfileServiceDataTableProps = {
 	services: ServiceType[];
 };
 
+// function handleDelete(id: number) {
+// 	const deleteServiceMutation = api.service.deleteService.useMutation({
+// 		onSuccess: () => {
+// 			toast.success("Service deleted successfully.");
+// 		},
+// 		onError: (error) => {
+// 			toast.error(error.message || "Something went wrong. Please try again.");
+// 		},
+// 	});
+
+// 	deleteServiceMutation.mutate({ id });
+// }
+
 export function ProfileServiceDataTable({
 	services,
 }: ProfileServiceDataTableProps) {
+	const [deleteDialogId, setDeleteDialogId] = React.useState<
+		number | undefined
+	>();
 	const columnHelper = createColumnHelper<ServiceType>();
 
 	const columns = [
@@ -63,15 +90,47 @@ export function ProfileServiceDataTable({
 		columnHelper.display({
 			id: "actions",
 			header: "Actions",
-			cell: () => {
+			cell: (props) => {
+				const serviceId = props.row.original.id;
 				return (
 					<div className="flex items-center gap-2">
-						<Button variant="outline" size="icon">
-							<PencilIcon className="size-4" />
-						</Button>
-						<Button variant="outline" size="icon">
+						<ProfileServiceDialog
+							data={props.row.original}
+							trigger={
+								<Button variant="outline" size="icon">
+									<PencilIcon className="size-4" />
+								</Button>
+							}
+						/>
+						<Button
+							variant="outline"
+							size="icon"
+							onClick={() => {
+								setDeleteDialogId(serviceId);
+							}}
+						>
 							<TrashIcon className="size-4" />
 						</Button>
+						<Dialog
+							open={deleteDialogId === serviceId}
+							onOpenChange={(open) => {
+								if (!open) setDeleteDialogId(undefined);
+							}}
+						>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>Delete Service</DialogTitle>
+									<DialogDescription>
+										Sorry! This feature is not available yet.
+									</DialogDescription>
+								</DialogHeader>
+								<DialogFooter>
+									<DialogClose asChild>
+										<Button variant="outline">Close</Button>
+									</DialogClose>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
 					</div>
 				);
 			},

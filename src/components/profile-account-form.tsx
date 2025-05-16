@@ -25,8 +25,8 @@ import { getAvatarInitials } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
 const schema = z.object({
-	name: z.string().min(1, { message: "Name is required" }),
-	email: z.string().email({ message: "Invalid email address" }),
+	name: z.string(),
+	email: z.string(),
 	image: z.string(),
 });
 
