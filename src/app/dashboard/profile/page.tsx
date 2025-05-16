@@ -5,6 +5,7 @@ import { ProfileCleanerForm } from "@/components/profile-form-cleaner";
 import { ProfileHomeOwnerForm } from "@/components/profile-form-homeowner";
 import { ProfileServicesCard } from "@/components/profile-services-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { auth } from "@/server/auth";
 import { api, HydrateClient } from "@/trpc/server";
 
@@ -63,7 +64,9 @@ export default async function ProfilePage() {
 					orientation="vertical"
 					className="justify-center gap-4"
 				>
-					<TabsList className={`grid w-full grid-cols-${String(tabs.length)}`}>
+					<TabsList
+						className={cn("grid w-full", `grid-cols-${String(tabs.length)}`)}
+					>
 						{tabs.map((tab) => (
 							<TabsTrigger key={tab.value} value={tab.value}>
 								{tab.label}

@@ -1,10 +1,12 @@
 "use client";
+import { Badge } from "@components/ui/badge";
 import {
 	createColumnHelper,
 	flexRender,
 	getCoreRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
+import { CheckIcon, PencilIcon, TrashIcon, XIcon } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -46,14 +48,32 @@ export function ProfileServiceDataTable({
 		}),
 		columnHelper.accessor("isActive", {
 			header: "Active",
+			cell: (props) => {
+				return props.getValue() ? (
+					<CheckIcon className="size-4 text-green-500" />
+				) : (
+					<XIcon className="size-4 text-red-500" />
+				);
+			},
 		}),
 		columnHelper.accessor("category.name", {
 			header: "Category",
+			cell: (props) => <Badge>{props.getValue()}</Badge>,
 		}),
 		columnHelper.display({
 			id: "actions",
+			header: "Actions",
 			cell: () => {
-				return <Button>Edit</Button>;
+				return (
+					<div className="flex items-center gap-2">
+						<Button variant="outline" size="icon">
+							<PencilIcon className="size-4" />
+						</Button>
+						<Button variant="outline" size="icon">
+							<TrashIcon className="size-4" />
+						</Button>
+					</div>
+				);
 			},
 		}),
 	];

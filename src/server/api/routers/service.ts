@@ -13,6 +13,9 @@ export const serviceRouter = createTRPCRouter({
 			},
 		});
 	}),
+	getCategories: protectedProcedure.query(async ({ ctx }) => {
+		return ctx.db.serviceCategory.findMany();
+	}),
 	upsertService: protectedProcedure
 		.input(
 			z.object({
