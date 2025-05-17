@@ -1,4 +1,5 @@
 "use client";
+import { Role } from "@prisma/client";
 import {
 	CalendarIcon,
 	ClockIcon,
@@ -6,6 +7,7 @@ import {
 	HeartIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -23,9 +25,13 @@ import { api } from "@/trpc/react";
 
 type CleanerProfileProps = {
 	cleanerId: string;
+	user: {
+		id: string;
+		role: Role;
+	};
 };
 
-export function ViewCleanerProfile({ cleanerId }: CleanerProfileProps) {
+export function ViewCleanerProfile({ cleanerId, user }: CleanerProfileProps) {
 	const [cleaner] = api.profile.getSpecificCleanerProfile.useSuspenseQuery({
 		id: cleanerId,
 	});
@@ -39,6 +45,40 @@ export function ViewCleanerProfile({ cleanerId }: CleanerProfileProps) {
 			</>
 		);
 	}
+
+	const utils = api.useUtils();
+	const [shortlist] = api.profile.getShortlist.useSuspenseQuery();
+	const addToShortlist = api.profile.addToShortlist.useMutation({
+		onSuccess: () => {
+			toast.success("Added to favourites");
+			void utils.profile.getShortlist.invalidate();
+		},
+		onError: (error) =>
+			toast.error(error.message || "Failed to add to favourites"),
+	});
+	const removeFromShortlist = api.profile.removeFromShortlist.useMutation({
+		onSuccess: () => {
+			toast.success("Removed from favourites");
+			void utils.profile.getShortlist.invalidate();
+		},
+		onError: (error) =>
+			toast.error(error.message || "Failed to remove from favourites"),
+	});
+
+	const selfOrCleaner = cleaner.id === user.id || user.role === Role.CLEANER;
+	const isHomeOwner = user.role === Role.HOME_OWNER;
+	const isFavourited = isHomeOwner && shortlist.includes(cleanerId);
+	const isMutating = addToShortlist.isPending || removeFromShortlist.isPending;
+
+	const handleToggleFavourite = () => {
+		if (!isHomeOwner) return;
+		if (isFavourited) {
+			removeFromShortlist.mutate({ cleanerId });
+		} else {
+			addToShortlist.mutate({ cleanerId });
+		}
+	};
+
 	const initials = getAvatarInitials(cleaner.name);
 	return (
 		<div className="space-y-8">
@@ -93,14 +133,26 @@ export function ViewCleanerProfile({ cleanerId }: CleanerProfileProps) {
 					</div>
 				</CardContent>
 				<CardFooter className="flex flex-col justify-end gap-3 p-6 sm:flex-row">
-					<Button variant="outline" size="lg">
-						<HeartIcon className="mr-2 h-4 w-4" />
-						Favourite
-					</Button>
-					<Button size="lg">
-						<CalendarIcon className="mr-2 h-4 w-4" />
-						Book Cleaner
-					</Button>
+					{!selfOrCleaner && isHomeOwner && (
+						<Button
+							variant={isFavourited ? "default" : "outline"}
+							size="lg"
+							onClick={handleToggleFavourite}
+							disabled={isMutating}
+							aria-pressed={isFavourited}
+						>
+							<HeartIcon
+								className={`mr-2 h-4 w-4 ${isFavourited ? "fill-red-500 text-red-500" : ""}`}
+							/>
+							{isFavourited ? "Favourited" : "Favourite"}
+						</Button>
+					)}
+					{isHomeOwner && (
+						<Button size="lg">
+							<CalendarIcon className="mr-2 h-4 w-4" />
+							Book Cleaner
+						</Button>
+					)}
 				</CardFooter>
 			</Card>
 		</div>

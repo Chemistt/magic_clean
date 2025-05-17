@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import {
+	createTRPCRouter,
+	protectedProcedure,
+	publicProcedure,
+} from "@/server/api/trpc";
 
 export const serviceRouter = createTRPCRouter({
 	getCurrentUserServices: protectedProcedure.query(async ({ ctx }) => {
@@ -23,7 +27,7 @@ export const serviceRouter = createTRPCRouter({
 			},
 		});
 	}),
-	getCategories: protectedProcedure.query(async ({ ctx }) => {
+	getCategories: publicProcedure.query(async ({ ctx }) => {
 		return ctx.db.serviceCategory.findMany();
 	}),
 	getService: protectedProcedure
