@@ -1,10 +1,10 @@
 "use client";
 
-import type { ServiceSchema } from "@components/profile-services-datatable";
 import { PlusIcon } from "lucide-react";
 import type { z } from "zod";
 
 import { ServiceForm } from "@/components/profile-service-form";
+import type { ServiceSchema } from "@/components/profile-services-datatable";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

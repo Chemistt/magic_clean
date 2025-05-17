@@ -1,5 +1,4 @@
 "use client";
-import { Badge } from "@components/ui/badge";
 import {
 	createColumnHelper,
 	flexRender,
@@ -11,6 +10,7 @@ import * as React from "react";
 import { z } from "zod";
 
 import { ProfileServiceDialog } from "@/components/profile-service-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
