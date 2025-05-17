@@ -148,9 +148,11 @@ export function ViewCleanerProfile({ cleanerId, user }: CleanerProfileProps) {
 						</Button>
 					)}
 					{isHomeOwner && (
-						<Button size="lg">
-							<CalendarIcon className="mr-2 h-4 w-4" />
-							Book Cleaner
+						<Button size="lg" asChild>
+							<Link href={`/dashboard/bookings/new?cleanerId=${cleanerId}`}>
+								<CalendarIcon className="mr-2 h-4 w-4" />
+								Book Cleaner
+							</Link>
 						</Button>
 					)}
 				</CardFooter>

@@ -29,7 +29,11 @@
 		/* Path Aliases */
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@/components/*": ["./src/components/*"],
+			"@/components/ui/*": ["./src/components/ui/*"],
+			"@/server/*": ["./src/server/*"],
+			"@/trpc/*": ["./src/trpc/*"]
 		}
 	},
 	"include": [

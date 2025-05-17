@@ -1,4 +1,5 @@
-// import NewBookingForm from "@/components/booking-form"; // Assuming this path for the form component
+import { BookingForm } from "@/components/booking-form";
+import { api, HydrateClient } from "@/trpc/server";
 
 type NewBookingPageProps = {
 	searchParams: Promise<{
@@ -12,11 +13,13 @@ export default async function NewBookingPage({
 	const searchParameters = await searchParams;
 	const cleanerId = searchParameters.cleanerId ?? "";
 
+	void api.profile.getSpecificCleanerProfile.prefetch({ id: cleanerId });
+
 	return (
-		<div className="container mx-auto p-4">
-			<h1 className="mb-4 text-2xl font-bold">Create New Booking</h1>
-			<p>{cleanerId}</p>
-			{/* <NewBookingForm initialCleanerId={cleanerId} /> */}
-		</div>
+		<HydrateClient>
+			<div className="mx-auto w-full max-w-3xl">
+				<BookingForm cleanerId={cleanerId} />
+			</div>
+		</HydrateClient>
 	);
 }
