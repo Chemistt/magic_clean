@@ -164,7 +164,7 @@ export function BookingList({ role }: { role: Role }) {
 									colSpan={columns.length}
 									className="h-min text-center"
 								>
-									No results.
+									No bookings found.
 								</TableCell>
 							</TableRow>
 						)}

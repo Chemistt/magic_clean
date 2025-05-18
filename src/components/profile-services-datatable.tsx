@@ -184,7 +184,7 @@ export function ProfileServiceDataTable({
 									colSpan={columns.length}
 									className="h-min text-center"
 								>
-									No results.
+									No services found.
 								</TableCell>
 							</TableRow>
 						)}
