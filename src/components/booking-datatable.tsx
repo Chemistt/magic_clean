@@ -32,7 +32,10 @@ export const BookingSchema = z.object({
 	bookingTime: z.date(),
 	status: z.string(),
 	paymentStatus: z.string(),
-	cleanerId: z.string(),
+	cleaner: z.object({
+		id: z.string(),
+		name: z.string(),
+	}),
 	service: z.object({
 		category: z.object({
 			name: z.string(),
@@ -43,10 +46,7 @@ export const BookingSchema = z.object({
 type BookingType = z.infer<typeof BookingSchema>;
 
 export function BookingList() {
-	// Fetch bookings and categories
 	const [bookings] = api.booking.getBookings.useSuspenseQuery();
-	// const [categories] = api.service.getCategories.useSuspenseQuery();
-
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
 	const columnHelper = createColumnHelper<BookingType>();
@@ -59,22 +59,20 @@ export function BookingList() {
 			header: "Date",
 			cell: (props) => format(new Date(props.getValue()), "PPP p"),
 		}),
-		columnHelper.accessor((row) => row.service.category.name, {
-			id: "service.category.name",
-			header: "Service",
-			cell: (props) =>
-				props.getValue() || <span className="text-muted-foreground">N/A</span>,
-		}),
-		columnHelper.accessor((row) => row.cleanerId, {
+		columnHelper.accessor((row) => row.cleaner.name, {
 			id: "cleaner",
 			header: "Cleaner",
 			cell: (props) =>
 				props.getValue() || <span className="text-muted-foreground">N/A</span>,
 		}),
-		columnHelper.display({
-			id: "actions",
-			header: "Actions",
-			cell: () => <Button>View</Button>,
+		columnHelper.accessor((row) => row.service.category.name, {
+			id: "service.category.name",
+			header: "Service",
+			cell: (props) =>
+				props.getValue() || <span className="text-muted-foreground">N/A</span>,
+			filterFn: (row, id, value: string[]) => {
+				return value.includes(row.getValue(id));
+			},
 		}),
 		columnHelper.accessor("status", {
 			header: "Status",
@@ -86,6 +84,14 @@ export function BookingList() {
 		columnHelper.accessor("paymentStatus", {
 			header: "Payment Status",
 			cell: (props) => <Badge>{props.getValue()}</Badge>,
+			filterFn: (row, id, value: string[]) => {
+				return value.includes(row.getValue(id));
+			},
+		}),
+		columnHelper.display({
+			id: "actions",
+			header: "Actions",
+			cell: () => <Button size="sm">View</Button>,
 		}),
 	];
 

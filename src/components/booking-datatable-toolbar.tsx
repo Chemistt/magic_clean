@@ -1,12 +1,13 @@
 "use client";
 
-import { BookingStatus } from "@prisma/client";
+import { BookingStatus, PaymentStatus } from "@prisma/client";
 import type { Table } from "@tanstack/react-table";
 import { X } from "lucide-react";
 
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { api } from "@/trpc/react";
 
 type DataTableToolbarProps<TData> = {
 	table: Table<TData>;
@@ -15,6 +16,8 @@ type DataTableToolbarProps<TData> = {
 export function DataTableToolbar<TData>({
 	table,
 }: DataTableToolbarProps<TData>) {
+	const [categories] = api.service.getCategories.useSuspenseQuery();
+
 	const isFiltered = table.getState().columnFilters.length > 0;
 
 	return (
@@ -38,13 +41,26 @@ export function DataTableToolbar<TData>({
 						}))}
 					/>
 				)}
-				{/* {table.getColumn("service.category.name") && (
+				{table.getColumn("paymentStatus") && (
 					<DataTableFacetedFilter
-						column={table.getColumn("status")}
-						title="Status"
-						options={BookingStatus}
+						column={table.getColumn("paymentStatus")}
+						title="Payment"
+						options={Object.values(PaymentStatus).map((status) => ({
+							label: status,
+							value: status,
+						}))}
 					/>
-				)} */}
+				)}
+				{table.getColumn("service.category.name") && (
+					<DataTableFacetedFilter
+						column={table.getColumn("service.category.name")}
+						title="Service"
+						options={categories.map((category) => ({
+							label: category.name,
+							value: category.name,
+						}))}
+					/>
+				)}
 				{isFiltered && (
 					<Button
 						variant="ghost"

@@ -6,7 +6,7 @@ export const bookingRouter = createTRPCRouter({
 	getBookings: protectedProcedure.query(async ({ ctx }) => {
 		const userId = ctx.session.user.id;
 
-		return ctx.db.booking.findMany({
+		const bookingData = await ctx.db.booking.findMany({
 			where: {
 				homeOwnerId: userId,
 			},
@@ -19,6 +19,20 @@ export const bookingRouter = createTRPCRouter({
 				},
 			},
 		});
+
+		return bookingData.map((booking) => ({
+			...booking,
+			priceAtBooking: booking.priceAtBooking.toNumber(),
+			cleaner: {
+				id: booking.cleaner.id,
+				name: booking.cleaner.name ?? "",
+			},
+			service: {
+				category: {
+					name: booking.service.category.name,
+				},
+			},
+		}));
 	}),
 	createBooking: protectedProcedure
 		.input(
