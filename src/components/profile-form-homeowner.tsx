@@ -33,12 +33,12 @@ const schema = z.object({
 });
 
 export function ProfileHomeOwnerForm() {
-	const [user] = api.profile.get.useSuspenseQuery();
+	const [user] = api.profile.getCurrentUserProfile.useSuspenseQuery();
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 
 	const updateHomeOwnerProfileMutation =
-		api.profile.updateHomeOwnerProfile.useMutation({
+		api.profile.upsertHomeOwnerProfile.useMutation({
 			onSuccess: () => {
 				toast("Profile updated", {
 					description: "Your home owner profile has been updated successfully.",

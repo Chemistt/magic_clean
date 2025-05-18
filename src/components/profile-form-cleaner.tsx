@@ -1,11 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-// import {
-// 	type CleanerProfile,
-// 	type HomeOwnerProfile,
-// 	type User,
-// } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -42,12 +37,12 @@ const schema = z.object({
 });
 
 export function ProfileCleanerForm() {
-	const [user] = api.profile.get.useSuspenseQuery();
+	const [user] = api.profile.getCurrentUserProfile.useSuspenseQuery();
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 
 	const updateCleanerProfileMutation =
-		api.profile.updateCleanerProfile.useMutation({
+		api.profile.upsertCleanerProfile.useMutation({
 			onSuccess: () => {
 				toast("Profile updated", {
 					description: "Your cleaner profile has been updated successfully.",
@@ -216,9 +211,8 @@ export function ProfileCleanerForm() {
 							/>
 						</div>
 					</CardContent>
-
-					<CardFooter className="border-t pt-6">
-						<Button type="submit" disabled={isLoading}>
+					<CardFooter className="flex justify-end">
+						<Button type="submit" className="" disabled={isLoading}>
 							{isLoading ? "Saving..." : "Save Changes"}
 						</Button>
 					</CardFooter>

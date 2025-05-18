@@ -21,16 +21,17 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { getAvatarInitials } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
 const schema = z.object({
-	name: z.string().min(1, { message: "Name is required" }),
-	email: z.string().email({ message: "Invalid email address" }),
+	name: z.string(),
+	email: z.string(),
 	image: z.string(),
 });
 
 export function ProfileAccountForm() {
-	const [user] = api.profile.get.useSuspenseQuery();
+	const [user] = api.profile.getCurrentUserProfile.useSuspenseQuery();
 
 	const form = useForm<z.infer<typeof schema>>({
 		resolver: zodResolver(schema),
@@ -41,12 +42,7 @@ export function ProfileAccountForm() {
 		},
 	});
 
-	const initials = user.name
-		? user.name
-				.split(" ")
-				.map((n) => n[0])
-				.join("")
-		: "U";
+	const initials = getAvatarInitials(user.name);
 	return (
 		<Form {...form}>
 			<form className="space-y-8">

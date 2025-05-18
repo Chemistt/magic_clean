@@ -64,17 +64,5 @@ export const authConfig = {
 				},
 			};
 		},
-		redirect: ({ url, baseUrl }) => {
-			// After sign in, redirect to the homepage instead of /dashboard
-			if (url.startsWith(baseUrl)) {
-				// For internal URLs, replace /dashboard with / if it's the sign-in callback
-				if (url.includes("/api/auth/callback") || url.includes("/dashboard")) {
-					return "/";
-				}
-				return url;
-			}
-			// For external URLs, redirect to the base URL
-			return baseUrl;
-		},
 	},
 } satisfies NextAuthConfig;

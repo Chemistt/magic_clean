@@ -1,11 +1,11 @@
 "use client";
 
-import { Calendar, Command, Home, Settings, UserPen } from "lucide-react";
+import { Calendar, Home, UserPen, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { type Session } from "next-auth";
 
 import { NavUser } from "@/components/nav-user";
-import { ModeToggle } from "@/components/theme-dropdown";
 import {
 	Sidebar,
 	SidebarContent,
@@ -32,14 +32,14 @@ const items = [
 		icon: UserPen,
 	},
 	{
+		title: "Cleaners",
+		url: "/dashboard/cleaners",
+		icon: Users,
+	},
+	{
 		title: "Bookings",
 		url: "/dashboard/bookings",
 		icon: Calendar,
-	},
-	{
-		title: "Settings",
-		url: "#",
-		icon: Settings,
 	},
 ];
 
@@ -63,7 +63,12 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
 						<SidebarMenuButton size="lg" asChild>
 							<a href="#">
 								<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-									<Command className="size-4" />
+									<Image
+										src="/favicon.ico"
+										alt="Magiclean"
+										width={20}
+										height={20}
+									/>
 								</div>
 								<div className="grid flex-1 text-left text-sm leading-tight">
 									<span className="truncate font-semibold">Magiclean</span>
@@ -96,7 +101,6 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
 				</SidebarGroup>
 			</SidebarContent>
 			<SidebarFooter>
-				<ModeToggle />
 				<NavUser user={userProperty} />
 			</SidebarFooter>
 			<SidebarRail />

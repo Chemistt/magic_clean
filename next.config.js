@@ -23,7 +23,7 @@ const config = {
 		],
 	},
 	experimental: {
-		reactCompiler: true,
+		reactCompiler: false,
 		ppr: false,
 		authInterrupts: true,
 	},

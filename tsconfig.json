@@ -10,6 +10,7 @@
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
 		"erasableSyntaxOnly": true,
+		"noErrorTruncation": true,
 
 		/* Strictness */
 		"strict": true,
@@ -29,7 +30,10 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./src/*"],
-			"@components/*": ["./src/components/*"]
+			"@/components/*": ["./src/components/*"],
+			"@/components/ui/*": ["./src/components/ui/*"],
+			"@/server/*": ["./src/server/*"],
+			"@/trpc/*": ["./src/trpc/*"]
 		}
 	},
 	"include": [
