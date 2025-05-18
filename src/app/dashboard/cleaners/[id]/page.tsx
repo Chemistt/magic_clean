@@ -2,6 +2,7 @@ import { Role } from "@prisma/client";
 import { Suspense } from "react";
 
 import { ViewCleanerProfile } from "@/components/profile-cleaner-details";
+import { Skeleton } from "@/components/ui/skeleton";
 import { auth } from "@/server/auth";
 import { api, HydrateClient } from "@/trpc/server";
 
@@ -20,8 +21,8 @@ export default async function CleanerProfilePage({
 	const session = await auth();
 	return (
 		<HydrateClient>
-			<div className="mx-auto w-full max-w-3xl">
-				<Suspense fallback={<p>Loading...</p>}>
+			<Suspense fallback={<Skeleton className="h-full w-full" />}>
+				<div className="mx-auto w-full max-w-3xl">
 					<ViewCleanerProfile
 						cleanerId={id}
 						user={{
@@ -29,8 +30,8 @@ export default async function CleanerProfilePage({
 							role: session?.user.role ?? Role.HOME_OWNER,
 						}}
 					/>
-				</Suspense>
-			</div>
+				</div>
+			</Suspense>
 		</HydrateClient>
 	);
 }
