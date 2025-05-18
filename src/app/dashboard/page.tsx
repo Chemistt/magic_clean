@@ -23,8 +23,10 @@ export default async function Dashboard() {
 						world is only in SIM UOW campus.
 					</p>
 					<div className="mt-12 flex flex-col items-center justify-center gap-y-2 sm:flex-row sm:items-center sm:gap-x-3">
-						<span className="text-sm text-neutral-400">Logged in as:</span>
-						<span className="font-medium text-white">
+						<span className="text-accent-foreground text-sm">
+							Logged in as:
+						</span>
+						<span className="text-primary font-medium">
 							{session.user.name ?? "Valued User"}
 						</span>
 						<Badge

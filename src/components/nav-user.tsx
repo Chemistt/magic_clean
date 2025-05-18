@@ -1,14 +1,6 @@
 "use client";
 
-import {
-	BadgeCheck,
-	Bell,
-	ChevronsUpDown,
-	CreditCard,
-	LogIn,
-	LogOut,
-	Sparkles,
-} from "lucide-react";
+import { ChevronsUpDown, LogIn, LogOut, Sparkles } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,6 +19,8 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar";
+
+import { ThemeToggle } from "./theme-toggle";
 
 export function NavUser({
 	user,
@@ -82,24 +76,22 @@ export function NavUser({
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
 							<DropdownMenuGroup>
-								<DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => {
+										window.open(
+											"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+											"_blank"
+										);
+									}}
+								>
 									<Sparkles />
 									Upgrade to Pro
 								</DropdownMenuItem>
 							</DropdownMenuGroup>
 							<DropdownMenuSeparator />
 							<DropdownMenuGroup>
-								<DropdownMenuItem>
-									<BadgeCheck />
-									Account
-								</DropdownMenuItem>
-								<DropdownMenuItem>
-									<CreditCard />
-									Billing
-								</DropdownMenuItem>
-								<DropdownMenuItem>
-									<Bell />
-									Notifications
+								<DropdownMenuItem asChild className="w-full justify-start">
+									<ThemeToggle />
 								</DropdownMenuItem>
 							</DropdownMenuGroup>
 							<DropdownMenuSeparator />

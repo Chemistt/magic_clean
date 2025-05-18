@@ -6,7 +6,6 @@ import Link from "next/link";
 import { type Session } from "next-auth";
 
 import { NavUser } from "@/components/nav-user";
-import { ModeToggle } from "@/components/theme-dropdown";
 import {
 	Sidebar,
 	SidebarContent,
@@ -102,7 +101,6 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
 				</SidebarGroup>
 			</SidebarContent>
 			<SidebarFooter>
-				<ModeToggle />
 				<NavUser user={userProperty} />
 			</SidebarFooter>
 			<SidebarRail />
