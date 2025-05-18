@@ -2,6 +2,7 @@
 
 import { BookingStatus, PaymentStatus, Role } from "@prisma/client";
 import { format } from "date-fns";
+import Link from "next/link";
 import { useState } from "react";
 import type { z } from "zod";
 
@@ -142,6 +143,21 @@ export function BookingDrawer({
 									</div>
 								</TableCell>
 							</TableRow>
+							{role === Role.HOME_OWNER &&
+								data.status === BookingStatus.COMPLETED && (
+									<TableRow>
+										<TableHead>Rebook Cleaner</TableHead>
+										<TableCell>
+											<Button size="sm" asChild>
+												<Link
+													href={`/dashboard/bookings/new?cleanerId=${data.opposingUser.id}`}
+												>
+													Rebook
+												</Link>
+											</Button>
+										</TableCell>
+									</TableRow>
+								)}
 						</TableBody>
 					</Table>
 

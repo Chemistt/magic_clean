@@ -80,7 +80,7 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 			toast("Booking created", {
 				description: "Your booking has been submitted successfully.",
 			});
-			router.refresh();
+			router.push(`/dashboard/bookings`);
 		},
 		onError: (error) => {
 			toast("Error", {

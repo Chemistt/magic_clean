@@ -10,6 +10,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -131,6 +132,39 @@ export function ViewCleanerProfile({ cleanerId, user }: CleanerProfileProps) {
 							</div>
 						</div>
 					</div>
+
+					{/* Services Section */}
+					{cleaner.CleanerProfile?.servicesOffered &&
+						cleaner.CleanerProfile.servicesOffered.length > 0 && (
+							<div className="mt-8">
+								<h1 className="mb-4 font-bold">Services Offered</h1>
+								<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+									{cleaner.CleanerProfile.servicesOffered.map((service) => (
+										<div
+											key={service.id}
+											className="bg-card text-card-foreground flex flex-col rounded-lg border p-5 shadow-md transition-shadow"
+										>
+											<div className="mb-2 flex items-center gap-3">
+												<Badge
+													variant="secondary"
+													className="text-sm font-semibold"
+												>
+													{service.category.name}
+												</Badge>
+												<span className="text-lg font-semibold">
+													{service.name}
+												</span>
+											</div>
+											{service.description && (
+												<p className="text-muted-foreground text-sm leading-relaxed">
+													{service.description}
+												</p>
+											)}
+										</div>
+									))}
+								</div>
+							</div>
+						)}
 				</CardContent>
 				<CardFooter className="flex flex-col justify-end gap-3 p-6 sm:flex-row">
 					{!selfOrCleaner && isHomeOwner && (
