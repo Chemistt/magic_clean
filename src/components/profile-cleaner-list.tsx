@@ -149,62 +149,68 @@ export function ProfileCleanerList() {
 					</Popover>
 				</div>
 
-				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-					{filteredCleaners.map((cleaner) => (
-						<Link
-							key={cleaner.id}
-							href={`/dashboard/cleaners/${cleaner.id}`}
-							className="block h-full"
-						>
-							<Card className="group border-border bg-card focus:ring-primary flex cursor-pointer flex-col items-center rounded-xl border p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg focus:ring-2 focus:outline-none">
-								<div className="border-secondary group-hover:border-secondary-foreground relative mb-2 size-24 overflow-hidden rounded-full border-4 transition-all">
-									<Image
-										src={cleaner.image ?? "/default-avatar.png"}
-										alt={cleaner.name ?? "Cleaner"}
-										fill
-										className="object-cover"
-										priority
-									/>
-								</div>
-								<h2 className="text-card-foreground w-full truncate text-center text-lg font-semibold">
-									{cleaner.name}
-								</h2>
-								{cleaner.CleanerProfile && (
-									<div className="text-muted-foreground flex w-full flex-col items-center text-sm">
-										<p className="mb-1">
-											Experience:{" "}
-											<span className="text-foreground font-medium">
-												{cleaner.CleanerProfile.yearsExperience} years
-											</span>
-										</p>
-										<p className="mb-2">
-											Rate:{" "}
-											<span className="text-primary font-semibold">
-												${cleaner.CleanerProfile.askingPrice.toString()}/hr
-											</span>
-										</p>
-										<div className="flex flex-wrap justify-center gap-2">
-											{cleaner.CleanerProfile.servicesOffered
-												.map((service) => service.category.name)
-												.filter(
-													(name, index, self) => self.indexOf(name) === index
-												)
-												.map((name) => (
-													<Badge
-														key={name}
-														variant="outline"
-														className="border-primary text-primary bg-primary-foreground/10 px-2 py-1 text-xs"
-													>
-														{name}
-													</Badge>
-												))}
-										</div>
+				{filteredCleaners.length === 0 ? (
+					<div className="text-muted-foreground col-span-full py-12 text-center">
+						No cleaners found matching your criteria.
+					</div>
+				) : (
+					<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+						{filteredCleaners.map((cleaner) => (
+							<Link
+								key={cleaner.id}
+								href={`/dashboard/cleaners/${cleaner.id}`}
+								className="block h-full"
+							>
+								<Card className="group border-border bg-card focus:ring-primary flex cursor-pointer flex-col items-center rounded-xl border p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg focus:ring-2 focus:outline-none">
+									<div className="border-secondary group-hover:border-secondary-foreground relative mb-2 size-24 overflow-hidden rounded-full border-4 transition-all">
+										<Image
+											src={cleaner.image ?? "/default-avatar.png"}
+											alt={cleaner.name ?? "Cleaner"}
+											fill
+											className="object-cover"
+											priority
+										/>
 									</div>
-								)}
-							</Card>
-						</Link>
-					))}
-				</div>
+									<h2 className="text-card-foreground w-full truncate text-center text-lg font-semibold">
+										{cleaner.name}
+									</h2>
+									{cleaner.CleanerProfile && (
+										<div className="text-muted-foreground flex w-full flex-col items-center text-sm">
+											<p className="mb-1">
+												Experience:{" "}
+												<span className="text-foreground font-medium">
+													{cleaner.CleanerProfile.yearsExperience} years
+												</span>
+											</p>
+											<p className="mb-2">
+												Rate:{" "}
+												<span className="text-primary font-semibold">
+													${cleaner.CleanerProfile.askingPrice.toString()}/hr
+												</span>
+											</p>
+											<div className="flex flex-wrap justify-center gap-2">
+												{cleaner.CleanerProfile.servicesOffered
+													.map((service) => service.category.name)
+													.filter(
+														(name, index, self) => self.indexOf(name) === index
+													)
+													.map((name) => (
+														<Badge
+															key={name}
+															variant="outline"
+															className="border-primary text-primary bg-primary-foreground/10 px-2 py-1 text-xs"
+														>
+															{name}
+														</Badge>
+													))}
+											</div>
+										</div>
+									)}
+								</Card>
+							</Link>
+						))}
+					</div>
+				)}
 			</div>
 		</section>
 	);
