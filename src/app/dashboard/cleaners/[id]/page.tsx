@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 import { Suspense } from "react";
 
-import { ViewCleanerProfile } from "@/components/profile-view-cleaner";
+import { ViewCleanerProfile } from "@/components/profile-cleaner-details";
 import { auth } from "@/server/auth";
 import { api, HydrateClient } from "@/trpc/server";
 

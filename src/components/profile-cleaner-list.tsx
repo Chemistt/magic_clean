@@ -1,31 +1,75 @@
 "use client";
 
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
+
+// Types for cleaner and booking
+
+type Booking = {
+	bookingTime: Date | string;
+};
+
+type Cleaner = {
+	id: string;
+	name?: string | null;
+	image?: string | null;
+	CleanerProfile?: {
+		yearsExperience: number;
+		askingPrice: number;
+		servicesOffered: { category: { name: string } }[];
+	} | null;
+	bookingsAsCleaner: Booking[];
+};
+
+// Helper to check if a cleaner is available on the selected date
+function isCleanerAvailableOnDate(cleaner: Cleaner, date: string): boolean {
+	if (!date) return true;
+	return !cleaner.bookingsAsCleaner.some((booking) => {
+		const bookingDate = format(new Date(booking.bookingTime), "yyyy-MM-dd");
+		return bookingDate === date;
+	});
+}
 
 export function ProfileCleanerList() {
 	const [cleaners] = api.profile.getAllCleaners.useSuspenseQuery();
 	const [categories] = api.service.getCategories.useSuspenseQuery();
 
 	const [selectedCategory, setSelectedCategory] = useState<string>("");
+	const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 
-	// Filter cleaners by selected category
+	// Filter cleaners by selected category and date
 	const filteredCleaners = useMemo(() => {
+		let result: Cleaner[] = cleaners;
 		if (selectedCategory) {
-			return cleaners.filter((cleaner) =>
+			result = result.filter((cleaner) =>
 				cleaner.CleanerProfile?.servicesOffered.some(
 					(service) => service.category.name === selectedCategory
 				)
 			);
 		}
-		return cleaners;
-	}, [cleaners, selectedCategory]);
+		if (selectedDate) {
+			const dateString = format(selectedDate, "yyyy-MM-dd");
+			result = result.filter((cleaner) =>
+				isCleanerAvailableOnDate(cleaner, dateString)
+			);
+		}
+		return result;
+	}, [cleaners, selectedCategory, selectedDate]);
 
 	return (
 		<section className="bg-background mx-auto min-h-screen max-w-7xl">
@@ -73,6 +117,36 @@ export function ProfileCleanerList() {
 							{category.name}
 						</Button>
 					))}
+					{/* Availability Date Filter using Popover/Calendar */}
+					<Popover>
+						<PopoverTrigger asChild>
+							<Button
+								variant={"outline"}
+								className={cn(
+									"w-[240px] pl-3 text-left font-normal",
+									!selectedDate && "text-muted-foreground"
+								)}
+							>
+								{selectedDate ? (
+									format(selectedDate, "MM/dd/yyyy")
+								) : (
+									<span>Pick a date</span>
+								)}
+								<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent className="w-auto p-0" align="start">
+							<div className="sm:flex">
+								<Calendar
+									mode="single"
+									selected={selectedDate}
+									onSelect={setSelectedDate}
+									disabled={(date) => date <= new Date()}
+									initialFocus
+								/>
+							</div>
+						</PopoverContent>
+					</Popover>
 				</div>
 
 				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

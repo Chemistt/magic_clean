@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/no-null */
-import { Role } from "@prisma/client";
+import { BookingStatus, Role } from "@prisma/client";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
@@ -72,6 +72,20 @@ export const profileRouter = createTRPCRouter({
 						},
 					},
 				},
+				bookingsAsCleaner: {
+					where: {
+						status: {
+							in: [
+								BookingStatus.CONFIRMED,
+								BookingStatus.IN_PROGRESS,
+								BookingStatus.PENDING,
+							],
+						},
+					},
+					select: {
+						bookingTime: true,
+					},
+				},
 			},
 		});
 
@@ -80,6 +94,7 @@ export const profileRouter = createTRPCRouter({
 				return {
 					...cleaner,
 					CleanerProfile: null,
+					bookingsAsCleaner: [],
 				};
 			}
 			return {
@@ -87,6 +102,7 @@ export const profileRouter = createTRPCRouter({
 				CleanerProfile: {
 					...cleaner.CleanerProfile,
 					askingPrice: cleaner.CleanerProfile.askingPrice.toNumber(),
+					bookingsAsCleaner: cleaner.bookingsAsCleaner,
 				},
 			};
 		});
