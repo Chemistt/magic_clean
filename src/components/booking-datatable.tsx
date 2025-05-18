@@ -43,7 +43,6 @@ export const BookingSchema = z.object({
 type BookingType = z.infer<typeof BookingSchema>;
 
 export function BookingList() {
-	"use no memo";
 	// Fetch bookings and categories
 	const [bookings] = api.booking.getBookings.useSuspenseQuery();
 	// const [categories] = api.service.getCategories.useSuspenseQuery();

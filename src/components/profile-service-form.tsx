@@ -1,6 +1,5 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -41,7 +40,6 @@ type ServiceFormProps = {
 export function ServiceForm({ service }: ServiceFormProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const utils = api.useUtils();
-	const router = useRouter();
 
 	const [categories] = api.service.getCategories.useSuspenseQuery();
 
@@ -53,8 +51,6 @@ export function ServiceForm({ service }: ServiceFormProps) {
 
 			// TODO: Fix datatable not showing latest data
 			await utils.service.getCurrentUserServices.invalidate();
-			await utils.service.getCurrentUserServices.refetch();
-			router.refresh();
 		},
 		onError: (error) => {
 			toast("Error", {
