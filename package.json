@@ -10,6 +10,7 @@
 		"db:migrate": "prisma migrate deploy",
 		"db:push": "prisma db push",
 		"db:studio": "prisma studio",
+		"db:seed": "NODE_ENV=development prisma db seed",
 		"dev": "next dev --turbo",
 		"format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
 		"format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
@@ -19,6 +20,9 @@
 		"preview": "next build && next start",
 		"start": "next start",
 		"typecheck": "tsc --noEmit"
+	},
+	"prisma": {
+		"seed": "tsx prisma/seed.ts"
 	},
 	"dependencies": {
 		"@auth/prisma-adapter": "^2.7.2",
@@ -66,6 +70,7 @@
 	"devDependencies": {
 		"@eslint-react/eslint-plugin": "^1.48.3",
 		"@eslint/eslintrc": "^3.3.1",
+		"@faker-js/faker": "^9.8.0",
 		"@iconify-icon/react": "^3.0.0",
 		"@tailwindcss/postcss": "^4.0.15",
 		"@types/node": "^20.14.10",
@@ -83,6 +88,7 @@
 		"prettier-plugin-tailwindcss": "^0.6.11",
 		"prisma": "^6.5.0",
 		"tailwindcss": "^4.0.15",
+		"tsx": "^4.19.4",
 		"typescript": "^5.8.2",
 		"typescript-eslint": "^8.27.0"
 	},
