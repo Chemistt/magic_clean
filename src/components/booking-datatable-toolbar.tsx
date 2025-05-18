@@ -1,6 +1,6 @@
 "use client";
 
-import { BookingStatus, PaymentStatus } from "@prisma/client";
+import { BookingStatus, PaymentStatus, Role } from "@prisma/client";
 import type { Table } from "@tanstack/react-table";
 import { X } from "lucide-react";
 
@@ -11,10 +11,12 @@ import { api } from "@/trpc/react";
 
 type DataTableToolbarProps<TData> = {
 	table: Table<TData>;
+	role: Role;
 };
 
 export function DataTableToolbar<TData>({
 	table,
+	role,
 }: DataTableToolbarProps<TData>) {
 	const [categories] = api.service.getCategories.useSuspenseQuery();
 
@@ -24,10 +26,18 @@ export function DataTableToolbar<TData>({
 		<div className="flex items-center justify-between">
 			<div className="flex flex-1 items-center space-x-2">
 				<Input
-					placeholder="Filter cleaners..."
-					value={table.getColumn("cleaner")?.getFilterValue() as string}
+					placeholder={
+						role === Role.HOME_OWNER
+							? "Filter cleaners..."
+							: "Filter home owners..."
+					}
+					value={
+						table.getColumn("opposingUser.name")?.getFilterValue() as string
+					}
 					onChange={(event) =>
-						table.getColumn("cleaner")?.setFilterValue(event.target.value)
+						table
+							.getColumn("opposingUser.name")
+							?.setFilterValue(event.target.value)
 					}
 					className="h-8 w-[150px] lg:w-[250px]"
 				/>

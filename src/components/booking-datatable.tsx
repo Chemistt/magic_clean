@@ -1,5 +1,6 @@
 "use client";
 
+import { Role } from "@prisma/client";
 import type { ColumnFiltersState } from "@tanstack/react-table";
 import {
 	createColumnHelper,
@@ -32,7 +33,7 @@ export const BookingSchema = z.object({
 	bookingTime: z.date(),
 	status: z.string(),
 	paymentStatus: z.string(),
-	cleaner: z.object({
+	opposingUser: z.object({
 		id: z.string(),
 		name: z.string(),
 	}),
@@ -45,7 +46,7 @@ export const BookingSchema = z.object({
 
 type BookingType = z.infer<typeof BookingSchema>;
 
-export function BookingList() {
+export function BookingList({ role }: { role: Role }) {
 	const [bookings] = api.booking.getBookings.useSuspenseQuery();
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
@@ -59,9 +60,9 @@ export function BookingList() {
 			header: "Date",
 			cell: (props) => format(new Date(props.getValue()), "PPP p"),
 		}),
-		columnHelper.accessor((row) => row.cleaner.name, {
-			id: "cleaner",
-			header: "Cleaner",
+		columnHelper.accessor((row) => row.opposingUser.name, {
+			id: "opposingUser.name",
+			header: role === Role.HOME_OWNER ? "Cleaner" : "Home Owner",
 			cell: (props) =>
 				props.getValue() || <span className="text-muted-foreground">N/A</span>,
 		}),
@@ -113,7 +114,7 @@ export function BookingList() {
 	return (
 		<div className="w-full py-2">
 			<div className="mb-2">
-				<DataTableToolbar table={table} />
+				<DataTableToolbar table={table} role={role} />
 			</div>
 			<div className="rounded-md border">
 				<Table>

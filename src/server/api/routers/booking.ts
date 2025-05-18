@@ -1,17 +1,21 @@
+import { Role } from "@prisma/client";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
 export const bookingRouter = createTRPCRouter({
 	getBookings: protectedProcedure.query(async ({ ctx }) => {
-		const userId = ctx.session.user.id;
+		const { id: userId, role } = ctx.session.user;
+
+		const filterKey = role === Role.HOME_OWNER ? "homeOwnerId" : "cleanerId";
 
 		const bookingData = await ctx.db.booking.findMany({
 			where: {
-				homeOwnerId: userId,
+				[filterKey]: userId,
 			},
 			include: {
 				cleaner: true,
+				homeOwner: true,
 				service: {
 					include: {
 						category: true,
@@ -23,9 +27,13 @@ export const bookingRouter = createTRPCRouter({
 		return bookingData.map((booking) => ({
 			...booking,
 			priceAtBooking: booking.priceAtBooking.toNumber(),
-			cleaner: {
-				id: booking.cleaner.id,
-				name: booking.cleaner.name ?? "",
+			opposingUser: {
+				id:
+					role === Role.HOME_OWNER ? booking.cleaner.id : booking.homeOwner.id,
+				name:
+					role === Role.HOME_OWNER
+						? (booking.cleaner.name ?? "")
+						: (booking.homeOwner.name ?? ""),
 			},
 			service: {
 				category: {
