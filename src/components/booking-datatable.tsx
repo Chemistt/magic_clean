@@ -79,7 +79,7 @@ export function BookingList() {
 		columnHelper.accessor("status", {
 			header: "Status",
 			cell: (props) => <Badge>{props.getValue()}</Badge>,
-			filterFn: (row, id, value) => {
+			filterFn: (row, id, value: string[]) => {
 				return value.includes(row.getValue(id));
 			},
 		}),
