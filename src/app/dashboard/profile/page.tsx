@@ -10,7 +10,13 @@ import { cn } from "@/lib/utils";
 import { auth } from "@/server/auth";
 import { api, HydrateClient } from "@/trpc/server";
 
-export default async function ProfilePage() {
+type ProfilePageProps = {
+	searchParams: Promise<{ tab: string | undefined }>;
+};
+
+export default async function ProfilePage({ searchParams }: ProfilePageProps) {
+	const search = await searchParams;
+	const tabParameter = search.tab ?? "account";
 	const session = await auth();
 	if (!session) {
 		return (
@@ -67,7 +73,7 @@ export default async function ProfilePage() {
 	return (
 		<HydrateClient>
 			<div className="mx-auto w-full max-w-3xl">
-				<Tabs defaultValue="account" className="justify-center gap-4">
+				<Tabs defaultValue={tabParameter} className="justify-center gap-4">
 					<TabsList
 						className={cn(
 							"grid w-full",

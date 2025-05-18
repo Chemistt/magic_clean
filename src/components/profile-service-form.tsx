@@ -40,7 +40,6 @@ type ServiceFormProps = {
 export function ServiceForm({ service }: ServiceFormProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const utils = api.useUtils();
-
 	const [categories] = api.service.getCategories.useSuspenseQuery();
 
 	const updateServiceMutation = api.service.upsertService.useMutation({
@@ -48,14 +47,10 @@ export function ServiceForm({ service }: ServiceFormProps) {
 			toast("Service updated", {
 				description: "Your service has been updated successfully.",
 			});
-
-			// TODO: Fix datatable not showing latest data
 			await utils.service.getCurrentUserServices.invalidate();
 		},
 		onError: (error) => {
-			toast("Error", {
-				description: error.message || "Something went wrong. Please try again.",
-			});
+			toast.error(error.message || "Something went wrong. Please try again.");
 		},
 	});
 

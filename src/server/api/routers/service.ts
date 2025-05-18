@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import {
@@ -15,7 +16,7 @@ export const serviceRouter = createTRPCRouter({
 		});
 
 		if (!cleanerProfile) {
-			throw new Error("Cleaner profile not found");
+			return [];
 		}
 
 		return ctx.db.service.findMany({
@@ -52,7 +53,10 @@ export const serviceRouter = createTRPCRouter({
 			});
 
 			if (!cleanerProfile) {
-				throw new Error("Cleaner profile not found");
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Cleaner profile not found, please create a profile.",
+				});
 			}
 
 			if (input.id) {
