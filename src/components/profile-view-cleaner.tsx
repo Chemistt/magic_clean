@@ -48,19 +48,19 @@ export function ViewCleanerProfile({ cleanerId, user }: CleanerProfileProps) {
 	}
 
 	const utils = api.useUtils();
-	const [shortlist] = api.profile.getShortlist.useSuspenseQuery();
-	const addToShortlist = api.profile.addToShortlist.useMutation({
+	const [shortlist] = api.favourites.getShortlist.useSuspenseQuery();
+	const addToShortlist = api.favourites.addToShortlist.useMutation({
 		onSuccess: () => {
 			toast.success("Added to favourites");
-			void utils.profile.getShortlist.invalidate();
+			void utils.favourites.getShortlist.invalidate();
 		},
 		onError: (error) =>
 			toast.error(error.message || "Failed to add to favourites"),
 	});
-	const removeFromShortlist = api.profile.removeFromShortlist.useMutation({
+	const removeFromShortlist = api.favourites.removeFromShortlist.useMutation({
 		onSuccess: () => {
 			toast.success("Removed from favourites");
-			void utils.profile.getShortlist.invalidate();
+			void utils.favourites.getShortlist.invalidate();
 		},
 		onError: (error) =>
 			toast.error(error.message || "Failed to remove from favourites"),

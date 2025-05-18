@@ -1,6 +1,7 @@
 import { Role } from "@prisma/client";
 
 import { ProfileAccountForm } from "@/components/profile-account-form";
+import { ProfileFavouritesCard } from "@/components/profile-favourites-card";
 import { ProfileCleanerForm } from "@/components/profile-form-cleaner";
 import { ProfileHomeOwnerForm } from "@/components/profile-form-homeowner";
 import { ProfileServicesCard } from "@/components/profile-services-card";
@@ -51,6 +52,10 @@ export default async function ProfilePage() {
 			value: "home_owner",
 			label: "Home Owner",
 		},
+		{
+			value: "favourites",
+			label: "Favourites",
+		},
 	];
 
 	const tabs = [
@@ -84,6 +89,7 @@ export default async function ProfilePage() {
 							{tab.value === "cleaner" && <ProfileCleanerForm />}
 							{tab.value === "services" && <ProfileServicesCard />}
 							{tab.value === "home_owner" && <ProfileHomeOwnerForm />}
+							{tab.value === "favourites" && <ProfileFavouritesCard />}
 						</TabsContent>
 					))}
 				</Tabs>

@@ -1,4 +1,5 @@
 import { bookingRouter } from "@/server/api/routers/booking";
+import { favouritesRouter } from "@/server/api/routers/favourites";
 import { profileRouter } from "@/server/api/routers/profile";
 import { serviceRouter } from "@/server/api/routers/service";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
 	profile: profileRouter,
 	booking: bookingRouter,
 	service: serviceRouter,
+	favourites: favouritesRouter,
 });
 
 // export type definition of API
