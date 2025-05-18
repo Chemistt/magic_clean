@@ -16,8 +16,8 @@ import { useState } from "react";
 import { z } from "zod";
 
 import { DataTableToolbar } from "@/components/booking-datatable-toolbar";
+import { BookingDrawer } from "@/components/booking-details-drawer";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
 	Table,
 	TableBody,
@@ -33,11 +33,18 @@ export const BookingSchema = z.object({
 	bookingTime: z.date(),
 	status: z.string(),
 	paymentStatus: z.string(),
+	priceAtBooking: z.number(),
+	durationMinutes: z.number().nullable(),
+	notes: z.string().nullable(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
 	opposingUser: z.object({
 		id: z.string(),
 		name: z.string(),
 	}),
 	service: z.object({
+		name: z.string(),
+		description: z.string().nullable(),
 		category: z.object({
 			name: z.string(),
 		}),
@@ -48,7 +55,10 @@ type BookingType = z.infer<typeof BookingSchema>;
 
 export function BookingList({ role }: { role: Role }) {
 	const [bookings] = api.booking.getBookings.useSuspenseQuery();
+
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+	const [drawerOpen, setDrawerOpen] = useState(false);
+	const [selectedRow, setSelectedRow] = useState<BookingType>();
 
 	const columnHelper = createColumnHelper<BookingType>();
 	const columns = [
@@ -88,11 +98,6 @@ export function BookingList({ role }: { role: Role }) {
 			filterFn: (row, id, value: string[]) => {
 				return value.includes(row.getValue(id));
 			},
-		}),
-		columnHelper.display({
-			id: "actions",
-			header: "Actions",
-			cell: () => <Button size="sm">View</Button>,
 		}),
 	];
 
@@ -138,6 +143,10 @@ export function BookingList({ role }: { role: Role }) {
 								<TableRow
 									key={row.id}
 									className="hover:bg-muted cursor-default"
+									onClick={() => {
+										setDrawerOpen(true);
+										setSelectedRow(row.original);
+									}}
 								>
 									{row.getVisibleCells().map((cell) => (
 										<TableCell key={cell.id}>
@@ -162,6 +171,14 @@ export function BookingList({ role }: { role: Role }) {
 					</TableBody>
 				</Table>
 			</div>
+			{!!selectedRow && (
+				<BookingDrawer
+					open={drawerOpen}
+					onOpenChange={setDrawerOpen}
+					data={selectedRow}
+					role={role}
+				/>
+			)}
 		</div>
 	);
 }
