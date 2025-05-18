@@ -4,7 +4,21 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
 export const bookingRouter = createTRPCRouter({
 	getBookings: protectedProcedure.query(async ({ ctx }) => {
-		return ctx.db.booking.findMany();
+		const userId = ctx.session.user.id;
+
+		return ctx.db.booking.findMany({
+			where: {
+				homeOwnerId: userId,
+			},
+			include: {
+				cleaner: true,
+				service: {
+					include: {
+						category: true,
+					},
+				},
+			},
+		});
 	}),
 	createBooking: protectedProcedure
 		.input(

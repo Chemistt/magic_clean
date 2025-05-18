@@ -30,38 +30,47 @@ export default async function ProfilePage() {
 	// 	session.user.role === Role.PLATFORM_MANAGER;
 	// const shouldShowUnknownForm = session.user.role === Role.UNKNOWN;
 
-	const tabs = [
+	const accountTabs = [
 		{
 			value: "account",
 			label: "Account",
 		},
 	];
-
-	if (shouldShowCleanerForm) {
-		tabs.push(
-			{
-				value: "cleaner",
-				label: "Cleaner",
-			},
-			{
-				value: "services",
-				label: "Services",
-			}
-		);
-	}
-	if (shouldShowHomeOwnerForm) {
-		tabs.push({
+	const cleanerTabs = [
+		{
+			value: "cleaner",
+			label: "Cleaner",
+		},
+		{
+			value: "services",
+			label: "Services",
+		},
+	];
+	const homeOwnerTabs = [
+		{
 			value: "home_owner",
 			label: "Home Owner",
-		});
-	}
+		},
+	];
+
+	const tabs = [
+		...accountTabs,
+		...(shouldShowCleanerForm ? cleanerTabs : []),
+		...(shouldShowHomeOwnerForm ? homeOwnerTabs : []),
+	];
 
 	return (
 		<HydrateClient>
 			<div className="mx-auto w-full max-w-3xl">
 				<Tabs defaultValue="account" className="justify-center gap-4">
 					<TabsList
-						className={cn("grid w-full", `grid-cols-${String(tabs.length)}`)}
+						className={cn(
+							"grid w-full",
+							tabs.length === 1 && "grid-cols-1",
+							tabs.length === 2 && "grid-cols-2",
+							tabs.length === 3 && "grid-cols-3",
+							tabs.length === 4 && "grid-cols-4"
+						)}
 					>
 						{tabs.map((tab) => (
 							<TabsTrigger key={tab.value} value={tab.value}>

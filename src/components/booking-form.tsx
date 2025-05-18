@@ -39,6 +39,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -113,6 +114,18 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 		} finally {
 			setIsLoading(false);
 		}
+	}
+	function handleTimeChange(type: "hour" | "minute", value: string) {
+		const currentTime = form.getValues("bookingTime");
+		const newDate = new Date(currentTime);
+		if (type === "hour") {
+			const hour = Number.parseInt(value, 10);
+			newDate.setHours(hour);
+		} else {
+			newDate.setMinutes(Number.parseInt(value, 10));
+		}
+
+		form.setValue("bookingTime", newDate);
 	}
 
 	return (
@@ -223,7 +236,7 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 														>
 															{/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
 															{field.value ? (
-																format(field.value, "PPP")
+																format(field.value, "MM/dd/yyyy HH:mm")
 															) : (
 																<span>Pick a date</span>
 															)}
@@ -232,13 +245,85 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 													</FormControl>
 												</PopoverTrigger>
 												<PopoverContent className="w-auto p-0" align="start">
-													<Calendar
-														mode="single"
-														selected={field.value}
-														onSelect={field.onChange}
-														disabled={(date) => date <= new Date()}
-														initialFocus
-													/>
+													<div className="sm:flex">
+														<Calendar
+															mode="single"
+															selected={field.value}
+															onSelect={field.onChange}
+															disabled={(date) => date <= new Date()}
+															initialFocus
+														/>
+														<div className="flex flex-col divide-y sm:h-[300px] sm:flex-row sm:divide-x sm:divide-y-0">
+															<ScrollArea className="w-64 sm:w-auto">
+																<div className="flex p-2 sm:flex-col">
+																	{Array.from(
+																		{ length: 24 },
+																		(_, index) => index
+																	)
+																		.reverse()
+																		.map((hour) => (
+																			<Button
+																				key={hour}
+																				size="icon"
+																				variant={
+																					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+																					field.value &&
+																					field.value.getHours() === hour
+																						? "default"
+																						: "ghost"
+																				}
+																				className="aspect-square shrink-0 sm:w-full"
+																				onClick={() => {
+																					handleTimeChange(
+																						"hour",
+																						hour.toString()
+																					);
+																				}}
+																			>
+																				{hour}
+																			</Button>
+																		))}
+																</div>
+																<ScrollBar
+																	orientation="horizontal"
+																	className="sm:hidden"
+																/>
+															</ScrollArea>
+															<ScrollArea className="w-64 sm:w-auto">
+																<div className="flex p-2 sm:flex-col">
+																	{Array.from(
+																		{ length: 12 },
+																		(_, index) => index * 5
+																	).map((minute) => (
+																		<Button
+																			key={minute}
+																			size="icon"
+																			variant={
+																				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+																				field.value &&
+																				field.value.getMinutes() === minute
+																					? "default"
+																					: "ghost"
+																			}
+																			className="aspect-square shrink-0 sm:w-full"
+																			onClick={() => {
+																				handleTimeChange(
+																					"minute",
+																					minute.toString()
+																				);
+																			}}
+																		>
+																			{minute.toString().padStart(2, "0")}
+																		</Button>
+																	))}
+																</div>
+																<ScrollBar
+																	orientation="horizontal"
+																	className="sm:hidden"
+																/>
+															</ScrollArea>
+														</div>
+													</div>
 												</PopoverContent>
 											</Popover>
 											<FormMessage />
