@@ -1,7 +1,7 @@
 "use client";
 
-import { Role } from "@prisma/client";
-import type { ColumnFiltersState } from "@tanstack/react-table";
+import { BookingStatus, PaymentStatus, Role } from "@prisma/client";
+import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
 import {
 	createColumnHelper,
 	flexRender,
@@ -9,15 +9,27 @@ import {
 	getFacetedRowModel,
 	getFacetedUniqueValues,
 	getFilteredRowModel,
+	getPaginationRowModel,
+	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
 import { format } from "date-fns";
+import {
+	BanknoteArrowDownIcon,
+	BanknoteArrowUpIcon,
+	BanknoteXIcon,
+	CheckIcon,
+	LoaderIcon,
+	TimerIcon,
+	XIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 
+import { DataTablePagination } from "@/components/booking-datatable-pagination";
 import { DataTableToolbar } from "@/components/booking-datatable-toolbar";
 import { BookingDrawer } from "@/components/booking-details-drawer";
-import { Badge } from "@/components/ui/badge";
+import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import {
 	Table,
 	TableBody,
@@ -57,28 +69,49 @@ export function BookingList({ role }: { role: Role }) {
 	const [bookings] = api.booking.getBookings.useSuspenseQuery();
 
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+	const [sorting, setSorting] = useState<SortingState>([
+		{
+			id: "bookingTime",
+			desc: true,
+		},
+	]);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const [selectedRow, setSelectedRow] = useState<BookingType>();
 
 	const columnHelper = createColumnHelper<BookingType>();
 	const columns = [
 		columnHelper.accessor("id", {
-			header: "ID",
+			header: ({ column }) => (
+				<DataTableColumnHeader column={column} title="ID" />
+			),
+			enableSorting: true,
 			cell: (props) => props.getValue(),
 		}),
 		columnHelper.accessor("bookingTime", {
-			header: "Date",
+			header: ({ column }) => (
+				<DataTableColumnHeader column={column} title="Date" />
+			),
+			enableSorting: true,
 			cell: (props) => format(new Date(props.getValue()), "PPP p"),
 		}),
 		columnHelper.accessor((row) => row.opposingUser.name, {
 			id: "opposingUser.name",
-			header: role === Role.HOME_OWNER ? "Cleaner" : "Home Owner",
+			header: ({ column }) => (
+				<DataTableColumnHeader
+					column={column}
+					title={role === Role.HOME_OWNER ? "Cleaner" : "Home Owner"}
+				/>
+			),
+			enableSorting: true,
 			cell: (props) =>
 				props.getValue() || <span className="text-muted-foreground">N/A</span>,
 		}),
 		columnHelper.accessor((row) => row.service.category.name, {
 			id: "service.category.name",
-			header: "Service",
+			header: ({ column }) => (
+				<DataTableColumnHeader column={column} title="Service" />
+			),
+			enableSorting: true,
 			cell: (props) =>
 				props.getValue() || <span className="text-muted-foreground">N/A</span>,
 			filterFn: (row, id, value: string[]) => {
@@ -86,15 +119,22 @@ export function BookingList({ role }: { role: Role }) {
 			},
 		}),
 		columnHelper.accessor("status", {
-			header: "Status",
-			cell: (props) => <Badge>{props.getValue()}</Badge>,
+			header: ({ column }) => (
+				<DataTableColumnHeader column={column} title="Status" />
+			),
+			enableSorting: true,
+			cell: (props) => getStatusDisplay(props.getValue() as BookingStatus),
 			filterFn: (row, id, value: string[]) => {
 				return value.includes(row.getValue(id));
 			},
 		}),
 		columnHelper.accessor("paymentStatus", {
-			header: "Payment Status",
-			cell: (props) => <Badge>{props.getValue()}</Badge>,
+			header: ({ column }) => (
+				<DataTableColumnHeader column={column} title="Payment Status" />
+			),
+			enableSorting: true,
+			cell: (props) =>
+				getPaymentStatusDisplay(props.getValue() as PaymentStatus),
 			filterFn: (row, id, value: string[]) => {
 				return value.includes(row.getValue(id));
 			},
@@ -105,12 +145,17 @@ export function BookingList({ role }: { role: Role }) {
 		data: bookings,
 		columns,
 		state: {
+			sorting,
 			columnFilters,
 		},
 		enableRowSelection: true,
 
+		onSortingChange: setSorting,
 		onColumnFiltersChange: setColumnFilters,
+
 		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getFacetedRowModel: getFacetedRowModel(),
 		getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -171,6 +216,7 @@ export function BookingList({ role }: { role: Role }) {
 					</TableBody>
 				</Table>
 			</div>
+			<DataTablePagination table={table} />
 			{!!selectedRow && (
 				<BookingDrawer
 					open={drawerOpen}
@@ -182,3 +228,101 @@ export function BookingList({ role }: { role: Role }) {
 		</div>
 	);
 }
+
+const getStatusDisplay = (status: BookingStatus) => {
+	switch (status) {
+		case BookingStatus.PENDING: {
+			return (
+				<div className="flex items-center">
+					<TimerIcon className="text-muted-foreground mr-2 h-4 w-4" />
+					<span>PENDING</span>
+				</div>
+			);
+		}
+		case BookingStatus.CONFIRMED: {
+			return (
+				<div className="flex items-center">
+					<CheckIcon className="mr-2 h-4 w-4 text-green-500" />
+					<span>CONFIRMED</span>
+				</div>
+			);
+		}
+		case BookingStatus.REJECTED: {
+			return (
+				<div className="flex items-center">
+					<XIcon className="text-destructive mr-2 h-4 w-4" />
+					<span>REJECTED</span>
+				</div>
+			);
+		}
+		case BookingStatus.COMPLETED: {
+			return (
+				<div className="flex items-center">
+					<CheckIcon className="mr-2 h-4 w-4 text-green-500" />
+					<span>COMPLETED</span>
+				</div>
+			);
+		}
+		case BookingStatus.CANCELLED_BY_OWNER: {
+			return (
+				<div className="flex items-center">
+					<XIcon className="text-destructive mr-2 h-4 w-4" />
+					<span>CANCELLED BY OWNER</span>
+				</div>
+			);
+		}
+		case BookingStatus.CANCELLED_BY_CLEANER: {
+			return (
+				<div className="flex items-center">
+					<XIcon className="text-destructive mr-2 h-4 w-4" />
+					<span>CANCELLED BY CLEANER</span>
+				</div>
+			);
+		}
+		case BookingStatus.IN_PROGRESS: {
+			return (
+				<div className="flex items-center">
+					<LoaderIcon className="text-muted-foreground mr-2 h-4 w-4" />
+					<span>IN PROGRESS</span>
+				</div>
+			);
+		}
+	}
+};
+
+const getPaymentStatusDisplay = (paymentStatus: PaymentStatus) => {
+	switch (paymentStatus) {
+		case PaymentStatus.PENDING: {
+			return (
+				<div className="flex items-center">
+					<TimerIcon className="text-muted-foreground mr-2 h-4 w-4" />
+					<span>PENDING</span>
+				</div>
+			);
+		}
+		case PaymentStatus.PAID: {
+			return (
+				<div className="flex items-center">
+					<BanknoteArrowUpIcon className="mr-2 h-4 w-4 text-green-500" />
+					<span>PAID</span>
+				</div>
+			);
+		}
+		case PaymentStatus.FAILED: {
+			return (
+				<div className="flex items-center">
+					<BanknoteXIcon className="text-destructive mr-2 h-4 w-4" />
+					<span>FAILED</span>
+				</div>
+			);
+		}
+		case PaymentStatus.REFUNDED: {
+			return (
+				<div className="flex items-center">
+					<BanknoteArrowDownIcon className="mr-2 h-4 w-4 text-yellow-500" />
+					<span>REFUNDED</span>
+				</div>
+			);
+		}
+	}
+};
