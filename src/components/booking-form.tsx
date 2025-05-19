@@ -345,7 +345,16 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 										<FormItem>
 											<FormLabel>Duration (minutes)</FormLabel>
 											<FormControl>
-												<Input type="number" min="1" step="1" {...field} />
+												<Input
+													type="number"
+													min="1"
+													step="1"
+													{...field}
+													value={field.value}
+													onChange={(event) => {
+														field.onChange(Number(event.target.value));
+													}}
+												/>
 											</FormControl>
 											<FormMessage />
 										</FormItem>
