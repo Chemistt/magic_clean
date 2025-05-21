@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-table";
 import { CheckIcon, PencilIcon, TrashIcon, XIcon } from "lucide-react";
 import * as React from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { ProfileServiceDialog } from "@/components/profile-service-dialog";
@@ -29,6 +30,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { api } from "@/trpc/react";
 
 export const ServiceSchema = z.object({
 	id: z.number(),
@@ -47,18 +49,18 @@ type ProfileServiceDataTableProps = {
 	services: ServiceType[];
 };
 
-// function handleDelete(id: number) {
-// 	const deleteServiceMutation = api.service.deleteService.useMutation({
-// 		onSuccess: () => {
-// 			toast.success("Service deleted successfully.");
-// 		},
-// 		onError: (error) => {
-// 			toast.error(error.message || "Something went wrong. Please try again.");
-// 		},
-// 	});
+function handleDelete(id: number) {
+	const deleteServiceMutation = api.service.deleteService.useMutation({
+		onSuccess: () => {
+			toast.success("Service deleted successfully.");
+		},
+		onError: (error) => {
+			toast.error(error.message || "Something went wrong. Please try again.");
+		},
+	});
 
-// 	deleteServiceMutation.mutate({ id });
-// }
+	deleteServiceMutation.mutate({ id });
+}
 
 export function ProfileServiceDataTable({
 	services,
@@ -125,6 +127,14 @@ export function ProfileServiceDataTable({
 									</DialogDescription>
 								</DialogHeader>
 								<DialogFooter>
+									<Button
+										variant="outline"
+										onClick={() => {
+											handleDelete(serviceId);
+										}}
+									>
+										Delete
+									</Button>
 									<DialogClose asChild>
 										<Button variant="outline">Close</Button>
 									</DialogClose>
