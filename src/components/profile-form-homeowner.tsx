@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -39,9 +38,8 @@ export function ProfileHomeOwnerForm() {
 		trpc.profile.getCurrentUserProfile.queryOptions()
 	);
 	const router = useRouter();
-	const [isLoading, setIsLoading] = useState(false);
 
-	const updateHomeOwnerProfileMutation = useMutation(
+	const { mutateAsync: updateHomeOwnerProfile, isPending } = useMutation(
 		trpc.profile.upsertHomeOwnerProfile.mutationOptions({
 			onSuccess: () => {
 				toast("Profile updated", {
@@ -66,31 +64,17 @@ export function ProfileHomeOwnerForm() {
 		},
 	});
 
-	async function onSubmit(values: z.infer<typeof schema>) {
-		setIsLoading(true);
-		try {
-			console.log("[CLIENT] Submitting form with values:", values);
-			const result = await updateHomeOwnerProfileMutation.mutateAsync({
-				...values,
-			});
-			console.log("[CLIENT] Update successful:", result);
-		} catch (error) {
-			console.error("[CLIENT] Error updating profile:", error);
-			toast("Error", {
-				description:
-					error instanceof Error ? error.message : "Failed to update profile",
-			});
-		} finally {
-			setIsLoading(false);
-		}
-	}
-
 	return (
 		<Form {...form}>
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
-					void form.handleSubmit(onSubmit)(event);
+					void form.handleSubmit(
+						async (values: z.infer<typeof schema>) =>
+							await updateHomeOwnerProfile({
+								...values,
+							})
+					)(event);
 				}}
 				className="space-y-8"
 			>
@@ -142,8 +126,8 @@ export function ProfileHomeOwnerForm() {
 					</CardContent>
 
 					<CardFooter className="border-t pt-6">
-						<Button type="submit" disabled={isLoading}>
-							{isLoading ? "Saving..." : "Save Changes"}
+						<Button type="submit" disabled={isPending}>
+							{isPending ? "Saving..." : "Save Changes"}
 						</Button>
 					</CardFooter>
 				</Card>

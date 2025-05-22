@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -43,9 +42,8 @@ export function ProfileCleanerForm() {
 		trpc.profile.getCurrentUserProfile.queryOptions()
 	);
 	const router = useRouter();
-	const [isLoading, setIsLoading] = useState(false);
 
-	const updateCleanerProfileMutation = useMutation(
+	const { mutateAsync: updateCleanerProfile, isPending } = useMutation(
 		trpc.profile.upsertCleanerProfile.mutationOptions({
 			onSuccess: () => {
 				toast("Profile updated", {
@@ -75,25 +73,17 @@ export function ProfileCleanerForm() {
 		},
 	});
 
-	async function onSubmit(values: z.infer<typeof schema>) {
-		setIsLoading(true);
-		try {
-			await updateCleanerProfileMutation.mutateAsync({
-				...values,
-			});
-		} catch (error) {
-			console.log("[CLIENT] Error updating profile:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	}
-
 	return (
 		<Form {...form}>
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
-					void form.handleSubmit(onSubmit)(event);
+					void form.handleSubmit(
+						async (values: z.infer<typeof schema>) =>
+							await updateCleanerProfile({
+								...values,
+							})
+					)(event);
 				}}
 				className="space-y-8"
 			>
@@ -217,8 +207,8 @@ export function ProfileCleanerForm() {
 						</div>
 					</CardContent>
 					<CardFooter className="flex justify-end">
-						<Button type="submit" className="" disabled={isLoading}>
-							{isLoading ? "Saving..." : "Save Changes"}
+						<Button type="submit" className="" disabled={isPending}>
+							{isPending ? "Saving..." : "Save Changes"}
 						</Button>
 					</CardFooter>
 				</Card>

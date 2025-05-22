@@ -5,7 +5,6 @@ import {
 	useQueryClient,
 	useSuspenseQuery,
 } from "@tanstack/react-query";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -43,14 +42,13 @@ type ServiceFormProps = {
 };
 
 export function ServiceForm({ service }: ServiceFormProps) {
-	const [isLoading, setIsLoading] = useState(false);
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
 	const { data: categories } = useSuspenseQuery(
 		trpc.service.getCategories.queryOptions()
 	);
 
-	const updateServiceMutation = useMutation(
+	const { mutateAsync: updateService, isPending } = useMutation(
 		trpc.service.upsertService.mutationOptions({
 			onSuccess: async () => {
 				toast("Service updated", {
@@ -65,39 +63,30 @@ export function ServiceForm({ service }: ServiceFormProps) {
 			},
 		})
 	);
-
 	const form = useForm<z.infer<typeof schema>>({
 		resolver: zodResolver(schema),
 		defaultValues: service
 			? {
 					name: service.name,
-					description: service.description,
+					description: service.description ?? "",
 					categoryId: service.category.id.toString(),
 				}
 			: undefined,
 	});
-
-	async function onSubmit(values: z.infer<typeof schema>) {
-		setIsLoading(true);
-		try {
-			await updateServiceMutation.mutateAsync({
-				...values,
-				categoryId: Number(values.categoryId),
-				...(service && { id: service.id }),
-			});
-		} catch (error) {
-			console.log("[CLIENT] Error updating profile:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	}
 
 	return (
 		<Form {...form}>
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
-					void form.handleSubmit(onSubmit)(event);
+					void form.handleSubmit(
+						async (values: z.infer<typeof schema>) =>
+							await updateService({
+								...values,
+								categoryId: Number(values.categoryId),
+								...(service && { id: service.id }),
+							})
+					)(event);
 				}}
 				className="space-y-10"
 			>
@@ -166,8 +155,8 @@ export function ServiceForm({ service }: ServiceFormProps) {
 				</div>
 				<DialogFooter>
 					<DialogClose asChild>
-						<Button type="submit" className="" disabled={isLoading}>
-							{isLoading ? "Saving..." : "Save Changes"}
+						<Button type="submit" className="" disabled={isPending}>
+							{isPending ? "Saving..." : "Save Changes"}
 						</Button>
 					</DialogClose>
 				</DialogFooter>

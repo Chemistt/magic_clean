@@ -36,7 +36,7 @@ import { useTRPC } from "@/trpc/react";
 export const ServiceSchema = z.object({
 	id: z.number(),
 	name: z.string(),
-	description: z.string(),
+	description: z.string().nullable(),
 	isActive: z.boolean(),
 	category: z.object({
 		id: z.number(),

@@ -10,7 +10,6 @@ import {
 	StickyNoteIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -78,9 +77,8 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 
 	const services = cleanerProfile?.CleanerProfile?.servicesOffered ?? [];
 	const router = useRouter();
-	const [isLoading, setIsLoading] = useState(false);
 
-	const createBookingMutation = useMutation(
+	const { mutateAsync: createBooking, isPending } = useMutation(
 		trpc.booking.createBooking.mutationOptions({
 			onSuccess: () => {
 				toast("Booking created", {
@@ -108,21 +106,6 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 		},
 	});
 
-	async function onSubmit(values: z.infer<typeof schema>) {
-		setIsLoading(true);
-		try {
-			await createBookingMutation.mutateAsync({
-				...values,
-				serviceId: Number(values.serviceId),
-				bookingTime: values.bookingTime.toISOString(),
-				cleanerId,
-			});
-		} catch (error) {
-			console.error("[CLIENT] Error creating booking:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	}
 	function handleTimeChange(type: "hour" | "minute", value: string) {
 		const currentTime = form.getValues("bookingTime");
 		const newDate = new Date(currentTime);
@@ -141,7 +124,15 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
-					void form.handleSubmit(onSubmit)(event);
+					void form.handleSubmit(
+						async (values: z.infer<typeof schema>) =>
+							await createBooking({
+								...values,
+								serviceId: Number(values.serviceId),
+								bookingTime: values.bookingTime.toISOString(),
+								cleanerId,
+							})
+					)(event);
 				}}
 				className="space-y-8"
 			>
@@ -418,8 +409,8 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 						</section>
 					</CardContent>
 					<CardFooter className="flex justify-end p-4 md:p-6">
-						<Button type="submit" disabled={isLoading}>
-							{isLoading ? "Booking..." : "Book Now"}
+						<Button type="submit" disabled={isPending}>
+							{isPending ? "Booking..." : "Book Now"}
 						</Button>
 					</CardFooter>
 				</Card>
