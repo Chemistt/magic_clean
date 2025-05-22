@@ -1,5 +1,4 @@
 /* eslint-disable @eslint-react/naming-convention/use-state */
-/* eslint-disable @eslint-react/no-context-provider */
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 "use client";
 

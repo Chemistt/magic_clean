@@ -1,5 +1,3 @@
-"use client";
-
 import { ProfileFavouritesDataTable } from "@/components/profile-favourites-datatable";
 import {
 	Card,
@@ -8,22 +6,24 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/trpc/react";
+import { api, HydrateClient, prefetch } from "@/trpc/server";
 
 export function ProfileFavouritesCard() {
-	api.favourites.getCurrentUserFavourites.usePrefetchQuery();
+	prefetch(api.favourites.getCurrentUserFavourites.queryOptions());
 
 	return (
-		<Card>
-			<CardHeader className="flex items-center justify-between">
-				<div>
-					<CardTitle>Favourites</CardTitle>
-					<CardDescription>Manage your favourites here</CardDescription>
-				</div>
-			</CardHeader>
-			<CardContent>
-				<ProfileFavouritesDataTable />
-			</CardContent>
-		</Card>
+		<HydrateClient>
+			<Card>
+				<CardHeader className="flex items-center justify-between">
+					<div>
+						<CardTitle>Favourites</CardTitle>
+						<CardDescription>Manage your favourites here</CardDescription>
+					</div>
+				</CardHeader>
+				<CardContent>
+					<ProfileFavouritesDataTable />
+				</CardContent>
+			</Card>
+		</HydrateClient>
 	);
 }
