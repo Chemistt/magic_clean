@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -26,7 +27,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 const schema = z.object({
 	bio: z.string().optional(),
@@ -37,12 +38,15 @@ const schema = z.object({
 });
 
 export function ProfileCleanerForm() {
-	const [user] = api.profile.getCurrentUserProfile.useSuspenseQuery();
+	const trpc = useTRPC();
+	const { data: user } = useSuspenseQuery(
+		trpc.profile.getCurrentUserProfile.queryOptions()
+	);
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 
-	const updateCleanerProfileMutation =
-		api.profile.upsertCleanerProfile.useMutation({
+	const updateCleanerProfileMutation = useMutation(
+		trpc.profile.upsertCleanerProfile.mutationOptions({
 			onSuccess: () => {
 				toast("Profile updated", {
 					description: "Your cleaner profile has been updated successfully.",
@@ -55,7 +59,8 @@ export function ProfileCleanerForm() {
 						error.message || "Something went wrong. Please try again.",
 				});
 			},
-		});
+		})
+	);
 
 	const form = useForm<z.infer<typeof schema>>({
 		resolver: zodResolver(schema),

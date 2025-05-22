@@ -1,5 +1,7 @@
 "use client";
 
+import { useSuspenseQuery } from "@tanstack/react-query";
+
 import { ProfileServiceDialog } from "@/components/profile-service-dialog";
 import {
 	ProfileServiceDataTable,
@@ -12,11 +14,15 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
+import { prefetch } from "@/trpc/server";
 
 export function ProfileServicesCard() {
-	const [data] = api.service.getCurrentUserServices.useSuspenseQuery();
-	api.service.getCategories.usePrefetchQuery();
+	const trpc = useTRPC();
+	const { data } = useSuspenseQuery(
+		trpc.service.getCurrentUserServices.queryOptions()
+	);
+	prefetch(trpc.service.getCategories.queryOptions());
 
 	const services = ServiceSchema.array().parse(data);
 

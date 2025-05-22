@@ -1,6 +1,7 @@
 "use client";
 
 import { BookingStatus, PaymentStatus, Role } from "@prisma/client";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
 import {
 	createColumnHelper,
@@ -38,7 +39,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 export const BookingSchema = z.object({
 	id: z.number(),
@@ -66,7 +67,10 @@ export const BookingSchema = z.object({
 type BookingType = z.infer<typeof BookingSchema>;
 
 export function BookingList({ role }: { role: Role }) {
-	const [bookings] = api.booking.getBookings.useSuspenseQuery();
+	const trpc = useTRPC();
+	const { data: bookings } = useSuspenseQuery(
+		trpc.booking.getBookings.queryOptions()
+	);
 
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [sorting, setSorting] = useState<SortingState>([

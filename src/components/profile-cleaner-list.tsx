@@ -1,5 +1,6 @@
 "use client";
 
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import Image from "next/image";
@@ -16,7 +17,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 // Types for cleaner and booking
 
@@ -46,8 +47,13 @@ function isCleanerAvailableOnDate(cleaner: Cleaner, date: string): boolean {
 }
 
 export function ProfileCleanerList() {
-	const [cleaners] = api.profile.getAllCleaners.useSuspenseQuery();
-	const [categories] = api.service.getCategories.useSuspenseQuery();
+	const trpc = useTRPC();
+	const { data: cleaners } = useSuspenseQuery(
+		trpc.profile.getAllCleaners.queryOptions()
+	);
+	const { data: categories } = useSuspenseQuery(
+		trpc.service.getCategories.queryOptions()
+	);
 
 	const [selectedCategory, setSelectedCategory] = useState<string>("");
 	const [selectedDate, setSelectedDate] = useState<Date | undefined>();

@@ -1,13 +1,14 @@
 "use client";
 
 import { BookingStatus, PaymentStatus, Role } from "@prisma/client";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { Table } from "@tanstack/react-table";
 import { X } from "lucide-react";
 
 import { DataTableFacetedFilter } from "@/components/data-table-faceted-filter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 type DataTableToolbarProps<TData> = {
 	table: Table<TData>;
@@ -18,7 +19,10 @@ export function DataTableToolbar<TData>({
 	table,
 	role,
 }: DataTableToolbarProps<TData>) {
-	const [categories] = api.service.getCategories.useSuspenseQuery();
+	const trpc = useTRPC();
+	const { data: categories } = useSuspenseQuery(
+		trpc.service.getCategories.queryOptions()
+	);
 
 	const isFiltered = table.getState().columnFilters.length > 0;
 

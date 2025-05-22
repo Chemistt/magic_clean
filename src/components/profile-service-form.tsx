@@ -1,5 +1,10 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -25,7 +30,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 const schema = z.object({
 	name: z.string(),
@@ -39,20 +44,27 @@ type ServiceFormProps = {
 
 export function ServiceForm({ service }: ServiceFormProps) {
 	const [isLoading, setIsLoading] = useState(false);
-	const utils = api.useUtils();
-	const [categories] = api.service.getCategories.useSuspenseQuery();
+	const trpc = useTRPC();
+	const queryClient = useQueryClient();
+	const { data: categories } = useSuspenseQuery(
+		trpc.service.getCategories.queryOptions()
+	);
 
-	const updateServiceMutation = api.service.upsertService.useMutation({
-		onSuccess: async () => {
-			toast("Service updated", {
-				description: "Your service has been updated successfully.",
-			});
-			await utils.service.getCurrentUserServices.invalidate();
-		},
-		onError: (error) => {
-			toast.error(error.message || "Something went wrong. Please try again.");
-		},
-	});
+	const updateServiceMutation = useMutation(
+		trpc.service.upsertService.mutationOptions({
+			onSuccess: async () => {
+				toast("Service updated", {
+					description: "Your service has been updated successfully.",
+				});
+				await queryClient.invalidateQueries(
+					trpc.service.getCurrentUserServices.queryFilter()
+				);
+			},
+			onError: (error) => {
+				toast.error(error.message || "Something went wrong. Please try again.");
+			},
+		})
+	);
 
 	const form = useForm<z.infer<typeof schema>>({
 		resolver: zodResolver(schema),

@@ -8,7 +8,7 @@ import { ProfileServicesCard } from "@/components/profile-services-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { auth } from "@/server/auth";
-import { api, HydrateClient } from "@/trpc/server";
+import { api, HydrateClient, prefetch } from "@/trpc/server";
 
 type ProfilePageProps = {
 	searchParams: Promise<{ tab: string | undefined }>;
@@ -26,9 +26,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 			</main>
 		);
 	}
-
 	// Prefetch user profile
-	void api.profile.getCurrentUserProfile.prefetch();
+	prefetch(api.profile.getCurrentUserProfile.queryOptions());
 
 	const shouldShowCleanerForm = session.user.role === Role.CLEANER;
 	const shouldShowHomeOwnerForm = session.user.role === Role.HOME_OWNER;

@@ -2,10 +2,10 @@ import { Suspense } from "react";
 
 import { ProfileCleanerList } from "@/components/profile-cleaner-list";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api, HydrateClient } from "@/trpc/server";
+import { api, HydrateClient, prefetch } from "@/trpc/server";
 
 export default function CleanerListPage() {
-	void api.profile.getAllCleaners.prefetch();
+	prefetch(api.profile.getAllCleaners.queryOptions());
 
 	return (
 		<HydrateClient>

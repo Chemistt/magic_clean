@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -25,7 +26,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 const schema = z.object({
 	address: z.string().optional(),
@@ -33,12 +34,15 @@ const schema = z.object({
 });
 
 export function ProfileHomeOwnerForm() {
-	const [user] = api.profile.getCurrentUserProfile.useSuspenseQuery();
+	const trpc = useTRPC();
+	const { data: user } = useSuspenseQuery(
+		trpc.profile.getCurrentUserProfile.queryOptions()
+	);
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 
-	const updateHomeOwnerProfileMutation =
-		api.profile.upsertHomeOwnerProfile.useMutation({
+	const updateHomeOwnerProfileMutation = useMutation(
+		trpc.profile.upsertHomeOwnerProfile.mutationOptions({
 			onSuccess: () => {
 				toast("Profile updated", {
 					description: "Your home owner profile has been updated successfully.",
@@ -51,7 +55,8 @@ export function ProfileHomeOwnerForm() {
 						error.message || "Something went wrong. Please try again.",
 				});
 			},
-		});
+		})
+	);
 
 	const form = useForm<z.infer<typeof schema>>({
 		resolver: zodResolver(schema),

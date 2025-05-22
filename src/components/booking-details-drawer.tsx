@@ -1,6 +1,7 @@
 "use client";
 
 import { BookingStatus, PaymentStatus, Role } from "@prisma/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import Link from "next/link";
 import { useState } from "react";
@@ -22,7 +23,7 @@ import {
 	TableHead,
 	TableRow,
 } from "@/components/ui/table";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 type BookingType = z.infer<typeof BookingSchema>;
 
@@ -39,17 +40,24 @@ export function BookingDrawer({
 	data,
 	role,
 }: BookingDrawerProps) {
-	const utils = api.useUtils();
+	const trpc = useTRPC();
+	const queryClient = useQueryClient();
+
 	const [error, setError] = useState<string | undefined>();
-	const updateBookingStatus = api.booking.updateBookingStatus.useMutation({
-		onSuccess: () => {
-			void utils.booking.getBookings.invalidate();
-			onOpenChange(false);
-		},
-		onError: (error_) => {
-			setError(error_ instanceof Error ? error_.message : "Unknown error");
-		},
-	});
+
+	const updateBookingStatus = useMutation(
+		trpc.booking.updateBookingStatus.mutationOptions({
+			onSuccess: async () => {
+				await queryClient.invalidateQueries(
+					trpc.booking.getBookings.queryFilter()
+				);
+				onOpenChange(false);
+			},
+			onError: (error_) => {
+				setError(error_ instanceof Error ? error_.message : "Unknown error");
+			},
+		})
+	);
 
 	const handleStatus = (status: BookingStatus) => {
 		setError(undefined);

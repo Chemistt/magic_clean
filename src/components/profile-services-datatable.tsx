@@ -1,4 +1,5 @@
 "use client";
+import { useMutation } from "@tanstack/react-query";
 import {
 	createColumnHelper,
 	flexRender,
@@ -30,7 +31,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 export const ServiceSchema = z.object({
 	id: z.number(),
@@ -49,25 +50,23 @@ type ProfileServiceDataTableProps = {
 	services: ServiceType[];
 };
 
-function handleDelete(id: number) {
-	const deleteServiceMutation = api.service.deleteService.useMutation({
-		onSuccess: () => {
-			toast.success("Service deleted successfully.");
-		},
-		onError: (error) => {
-			toast.error(error.message || "Something went wrong. Please try again.");
-		},
-	});
-
-	deleteServiceMutation.mutate({ id });
-}
-
 export function ProfileServiceDataTable({
 	services,
 }: ProfileServiceDataTableProps) {
 	const [deleteDialogId, setDeleteDialogId] = React.useState<
 		number | undefined
 	>();
+	const trpc = useTRPC();
+	const deleteServiceMutation = useMutation(
+		trpc.service.deleteService.mutationOptions({
+			onSuccess: () => {
+				toast.success("Service deleted successfully.");
+			},
+			onError: (error) => {
+				toast.error(error.message || "Something went wrong. Please try again.");
+			},
+		})
+	);
 	const columnHelper = createColumnHelper<ServiceType>();
 
 	const columns = [
@@ -130,7 +129,7 @@ export function ProfileServiceDataTable({
 									<Button
 										variant="outline"
 										onClick={() => {
-											handleDelete(serviceId);
+											deleteServiceMutation.mutate({ id: serviceId });
 										}}
 									>
 										Delete

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
 	CalendarIcon,
@@ -51,7 +52,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { getAvatarInitials } from "@/lib/utils";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 const schema = z.object({
 	bookingTime: z.date({ message: "Booking time is required" }),
@@ -67,27 +68,34 @@ type BookingFormProps = {
 };
 
 export function BookingForm({ cleanerId }: BookingFormProps) {
-	const [cleanerProfile] =
-		api.profile.getSpecificCleanerProfile.useSuspenseQuery({
+	const trpc = useTRPC();
+
+	const { data: cleanerProfile } = useSuspenseQuery(
+		trpc.profile.getSpecificCleanerProfile.queryOptions({
 			id: cleanerId,
-		});
+		})
+	);
+
 	const services = cleanerProfile?.CleanerProfile?.servicesOffered ?? [];
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 
-	const createBookingMutation = api.booking.createBooking.useMutation({
-		onSuccess: () => {
-			toast("Booking created", {
-				description: "Your booking has been submitted successfully.",
-			});
-			router.push(`/dashboard/bookings`);
-		},
-		onError: (error) => {
-			toast("Error", {
-				description: error.message || "Something went wrong. Please try again.",
-			});
-		},
-	});
+	const createBookingMutation = useMutation(
+		trpc.booking.createBooking.mutationOptions({
+			onSuccess: () => {
+				toast("Booking created", {
+					description: "Your booking has been submitted successfully.",
+				});
+				router.push(`/dashboard/bookings`);
+			},
+			onError: (error) => {
+				toast("Error", {
+					description:
+						error.message || "Something went wrong. Please try again.",
+				});
+			},
+		})
+	);
 
 	const form = useForm<z.infer<typeof schema>>({
 		resolver: zodResolver(schema),

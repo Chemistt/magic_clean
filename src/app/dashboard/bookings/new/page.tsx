@@ -1,5 +1,5 @@
 import { BookingForm } from "@/components/booking-form";
-import { api, HydrateClient } from "@/trpc/server";
+import { api, HydrateClient, prefetch } from "@/trpc/server";
 
 type NewBookingPageProps = {
 	searchParams: Promise<{
@@ -13,7 +13,9 @@ export default async function NewBookingPage({
 	const searchParameters = await searchParams;
 	const cleanerId = searchParameters.cleanerId ?? "";
 
-	void api.profile.getSpecificCleanerProfile.prefetch({ id: cleanerId });
+	prefetch(
+		api.profile.getSpecificCleanerProfile.queryOptions({ id: cleanerId })
+	);
 
 	return (
 		<HydrateClient>

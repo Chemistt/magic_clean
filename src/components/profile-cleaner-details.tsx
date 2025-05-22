@@ -1,6 +1,11 @@
 "use client";
 import { Role } from "@prisma/client";
 import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
+import {
 	CalendarIcon,
 	ClockIcon,
 	DollarSignIcon,
@@ -20,9 +25,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-// import { Separator } from "@/components/ui/separator";
 import { getAvatarInitials } from "@/lib/utils";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 type CleanerProfileProps = {
 	cleanerId: string;
@@ -33,9 +37,43 @@ type CleanerProfileProps = {
 };
 
 export function ViewCleanerProfile({ cleanerId, user }: CleanerProfileProps) {
-	const [cleaner] = api.profile.getSpecificCleanerProfile.useSuspenseQuery({
-		id: cleanerId,
-	});
+	const trpc = useTRPC();
+	const { data: cleaner } = useSuspenseQuery(
+		trpc.profile.getSpecificCleanerProfile.queryOptions({
+			id: cleanerId,
+		})
+	);
+
+	const { data: shortlist } = useSuspenseQuery(
+		trpc.favourites.getShortlist.queryOptions()
+	);
+
+	const queryClient = useQueryClient();
+	const addToShortlist = useMutation(
+		trpc.favourites.addToShortlist.mutationOptions({
+			onSuccess: () => {
+				toast.success("Added to favourites");
+				void queryClient.invalidateQueries(
+					trpc.favourites.getShortlist.queryFilter()
+				);
+			},
+			onError: (error) =>
+				toast.error(error.message || "Failed to add to favourites"),
+		})
+	);
+	const removeFromShortlist = useMutation(
+		trpc.favourites.removeFromShortlist.mutationOptions({
+			onSuccess: () => {
+				toast.success("Removed from favourites");
+				void queryClient.invalidateQueries(
+					trpc.favourites.getShortlist.queryFilter()
+				);
+			},
+			onError: (error) =>
+				toast.error(error.message || "Failed to remove from favourites"),
+		})
+	);
+
 	if (!cleaner) {
 		return (
 			<>
@@ -46,25 +84,6 @@ export function ViewCleanerProfile({ cleanerId, user }: CleanerProfileProps) {
 			</>
 		);
 	}
-
-	const utils = api.useUtils();
-	const [shortlist] = api.favourites.getShortlist.useSuspenseQuery();
-	const addToShortlist = api.favourites.addToShortlist.useMutation({
-		onSuccess: () => {
-			toast.success("Added to favourites");
-			void utils.favourites.getShortlist.invalidate();
-		},
-		onError: (error) =>
-			toast.error(error.message || "Failed to add to favourites"),
-	});
-	const removeFromShortlist = api.favourites.removeFromShortlist.useMutation({
-		onSuccess: () => {
-			toast.success("Removed from favourites");
-			void utils.favourites.getShortlist.invalidate();
-		},
-		onError: (error) =>
-			toast.error(error.message || "Failed to remove from favourites"),
-	});
 
 	const selfOrCleaner = cleaner.id === user.id || user.role === Role.CLEANER;
 	const isHomeOwner = user.role === Role.HOME_OWNER;
