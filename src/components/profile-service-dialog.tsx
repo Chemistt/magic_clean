@@ -26,13 +26,13 @@ export function ProfileServiceDialog({
 }: ProfileServiceDialogProps) {
 	return (
 		<Dialog>
-			<DialogTrigger asChild>
-				{trigger ?? (
+			{trigger ?? (
+				<DialogTrigger asChild>
 					<Button variant="outline" size="icon">
 						<PlusIcon className="size-4" />
 					</Button>
-				)}
-			</DialogTrigger>
+				</DialogTrigger>
+			)}
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{data ? "Edit Service" : "Add Service"}</DialogTitle>

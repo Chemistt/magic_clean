@@ -1,5 +1,5 @@
 "use client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import {
 	createColumnHelper,
 	flexRender,
@@ -46,17 +46,14 @@ export const ServiceSchema = z.object({
 
 type ServiceType = z.infer<typeof ServiceSchema>;
 
-type ProfileServiceDataTableProps = {
-	services: ServiceType[];
-};
-
-export function ProfileServiceDataTable({
-	services,
-}: ProfileServiceDataTableProps) {
+export function ProfileServiceDataTable() {
 	const [deleteDialogId, setDeleteDialogId] = React.useState<
 		number | undefined
 	>();
 	const trpc = useTRPC();
+	const { data: services } = useSuspenseQuery(
+		trpc.service.getCurrentUserServices.queryOptions()
+	);
 	const deleteServiceMutation = useMutation(
 		trpc.service.deleteService.mutationOptions({
 			onSuccess: () => {
@@ -118,11 +115,12 @@ export function ProfileServiceDataTable({
 								if (!open) setDeleteDialogId(undefined);
 							}}
 						>
+							{/* TODO: This cannot be deleted but set inactive */}
 							<DialogContent>
 								<DialogHeader>
 									<DialogTitle>Delete Service</DialogTitle>
 									<DialogDescription>
-										Sorry! This feature is not available yet.
+										Are you sure you want to delete this service?
 									</DialogDescription>
 								</DialogHeader>
 								<DialogFooter>
