@@ -38,7 +38,7 @@ function InnerThemeToggle({ className }: { className?: string }) {
 }
 
 const ThemeToggle = dynamic(() => Promise.resolve(InnerThemeToggle), {
-	loading: () => <Skeleton className="size-9" />,
+	loading: () => <Skeleton className="w-full justify-start" />,
 	ssr: false,
 });
 

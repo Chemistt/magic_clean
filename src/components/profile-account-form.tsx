@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { getAvatarInitials } from "@/lib/utils";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 const schema = z.object({
 	name: z.string(),
@@ -31,7 +32,10 @@ const schema = z.object({
 });
 
 export function ProfileAccountForm() {
-	const [user] = api.profile.getCurrentUserProfile.useSuspenseQuery();
+	const trpc = useTRPC();
+	const { data: user } = useSuspenseQuery(
+		trpc.profile.getCurrentUserProfile.queryOptions()
+	);
 
 	const form = useForm<z.infer<typeof schema>>({
 		resolver: zodResolver(schema),

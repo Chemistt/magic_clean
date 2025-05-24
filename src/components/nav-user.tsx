@@ -2,6 +2,7 @@
 
 import { ChevronsUpDown, LogIn, LogOut, Sparkles } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
+import { Suspense } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -90,9 +91,11 @@ export function NavUser({
 							</DropdownMenuGroup>
 							<DropdownMenuSeparator />
 							<DropdownMenuGroup>
-								<DropdownMenuItem asChild className="w-full justify-start">
-									<ThemeToggle />
-								</DropdownMenuItem>
+								<Suspense>
+									<DropdownMenuItem asChild className="w-full justify-start">
+										<ThemeToggle />
+									</DropdownMenuItem>
+								</Suspense>
 							</DropdownMenuGroup>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem onClick={() => void signOut()}>

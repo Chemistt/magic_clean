@@ -1,4 +1,5 @@
 "use client";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
 	createColumnHelper,
 	flexRender,
@@ -19,7 +20,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 export const FavouriteSchema = z.object({
 	id: z.number(),
@@ -33,8 +34,10 @@ export const FavouriteSchema = z.object({
 type FavouritesType = z.infer<typeof FavouriteSchema>;
 
 export function ProfileFavouritesDataTable() {
-	const [favourites] =
-		api.favourites.getCurrentUserFavourites.useSuspenseQuery();
+	const trpc = useTRPC();
+	const { data: favourites } = useSuspenseQuery(
+		trpc.favourites.getCurrentUserFavourites.queryOptions()
+	);
 
 	const columnHelper = createColumnHelper<FavouritesType>();
 

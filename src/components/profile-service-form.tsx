@@ -1,6 +1,10 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -25,7 +29,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 const schema = z.object({
 	name: z.string(),
@@ -38,54 +42,53 @@ type ServiceFormProps = {
 };
 
 export function ServiceForm({ service }: ServiceFormProps) {
-	const [isLoading, setIsLoading] = useState(false);
-	const utils = api.useUtils();
-	const [categories] = api.service.getCategories.useSuspenseQuery();
-
-	const updateServiceMutation = api.service.upsertService.useMutation({
-		onSuccess: async () => {
-			toast("Service updated", {
-				description: "Your service has been updated successfully.",
-			});
-			await utils.service.getCurrentUserServices.invalidate();
-		},
-		onError: (error) => {
-			toast.error(error.message || "Something went wrong. Please try again.");
-		},
-	});
-
-	const form = useForm<z.infer<typeof schema>>({
+	const trpc = useTRPC();
+	const queryClient = useQueryClient();
+	const { data: categories } = useSuspenseQuery(
+		trpc.service.getCategories.queryOptions()
+	);
+	const { mutate: updateService, isPending } = useMutation(
+		trpc.service.upsertService.mutationOptions({
+			onSuccess: () => {
+				toast("Service updated", {
+					description: "Your service has been updated successfully.",
+				});
+				void queryClient.invalidateQueries(
+					trpc.service.getCurrentUserServices.queryFilter()
+				);
+			},
+			onError: (error) => {
+				toast.error(error.message || "Something went wrong. Please try again.");
+			},
+		})
+	);
+	const form = useForm({
 		resolver: zodResolver(schema),
 		defaultValues: service
 			? {
 					name: service.name,
-					description: service.description,
+					description: service.description ?? "",
 					categoryId: service.category.id.toString(),
 				}
-			: undefined,
+			: {
+					name: "",
+					description: "",
+					categoryId: "",
+				},
 	});
-
-	async function onSubmit(values: z.infer<typeof schema>) {
-		setIsLoading(true);
-		try {
-			await updateServiceMutation.mutateAsync({
-				...values,
-				categoryId: Number(values.categoryId),
-				...(service && { id: service.id }),
-			});
-		} catch (error) {
-			console.log("[CLIENT] Error updating profile:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	}
 
 	return (
 		<Form {...form}>
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
-					void form.handleSubmit(onSubmit)(event);
+					void form.handleSubmit((values: z.infer<typeof schema>) => {
+						updateService({
+							...values,
+							categoryId: Number(values.categoryId),
+							...(service && { id: service.id }),
+						});
+					})(event);
 				}}
 				className="space-y-10"
 			>
@@ -154,8 +157,8 @@ export function ServiceForm({ service }: ServiceFormProps) {
 				</div>
 				<DialogFooter>
 					<DialogClose asChild>
-						<Button type="submit" className="" disabled={isLoading}>
-							{isLoading ? "Saving..." : "Save Changes"}
+						<Button type="submit" className="" disabled={isPending}>
+							{isPending ? "Saving..." : "Save Changes"}
 						</Button>
 					</DialogClose>
 				</DialogFooter>

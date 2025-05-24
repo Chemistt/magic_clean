@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { ViewCleanerProfile } from "@/components/profile-cleaner-details";
 import { Skeleton } from "@/components/ui/skeleton";
 import { auth } from "@/server/auth";
-import { api, HydrateClient } from "@/trpc/server";
+import { api, HydrateClient, prefetch } from "@/trpc/server";
 
 type CleanerProfileProps = {
 	params: Promise<{ id: string }>;
@@ -15,8 +15,8 @@ export default async function CleanerProfilePage({
 }: CleanerProfileProps) {
 	const { id } = await params;
 
-	void api.profile.getSpecificCleanerProfile.prefetch({ id });
-	void api.service.getCategories.prefetch();
+	prefetch(api.profile.getSpecificCleanerProfile.queryOptions({ id }));
+	prefetch(api.service.getCategories.queryOptions());
 
 	const session = await auth();
 	return (

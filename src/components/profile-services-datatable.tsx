@@ -1,12 +1,14 @@
 "use client";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import {
 	createColumnHelper,
 	flexRender,
 	getCoreRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { CheckIcon, PencilIcon, TrashIcon, XIcon } from "lucide-react";
+import { CheckIcon, TrashIcon, XIcon } from "lucide-react";
 import * as React from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { ProfileServiceDialog } from "@/components/profile-service-dialog";
@@ -29,11 +31,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useTRPC } from "@/trpc/react";
 
 export const ServiceSchema = z.object({
 	id: z.number(),
 	name: z.string(),
-	description: z.string(),
+	description: z.string().nullable(),
 	isActive: z.boolean(),
 	category: z.object({
 		id: z.number(),
@@ -43,29 +46,24 @@ export const ServiceSchema = z.object({
 
 type ServiceType = z.infer<typeof ServiceSchema>;
 
-type ProfileServiceDataTableProps = {
-	services: ServiceType[];
-};
-
-// function handleDelete(id: number) {
-// 	const deleteServiceMutation = api.service.deleteService.useMutation({
-// 		onSuccess: () => {
-// 			toast.success("Service deleted successfully.");
-// 		},
-// 		onError: (error) => {
-// 			toast.error(error.message || "Something went wrong. Please try again.");
-// 		},
-// 	});
-
-// 	deleteServiceMutation.mutate({ id });
-// }
-
-export function ProfileServiceDataTable({
-	services,
-}: ProfileServiceDataTableProps) {
+export function ProfileServiceDataTable() {
 	const [deleteDialogId, setDeleteDialogId] = React.useState<
 		number | undefined
 	>();
+	const trpc = useTRPC();
+	const { data: services } = useSuspenseQuery(
+		trpc.service.getCurrentUserServices.queryOptions()
+	);
+	const deleteServiceMutation = useMutation(
+		trpc.service.deleteService.mutationOptions({
+			onSuccess: () => {
+				toast.success("Service deleted successfully.");
+			},
+			onError: (error) => {
+				toast.error(error.message || "Something went wrong. Please try again.");
+			},
+		})
+	);
 	const columnHelper = createColumnHelper<ServiceType>();
 
 	const columns = [
@@ -94,14 +92,7 @@ export function ProfileServiceDataTable({
 				const serviceId = props.row.original.id;
 				return (
 					<div className="flex items-center gap-2">
-						<ProfileServiceDialog
-							data={props.row.original}
-							trigger={
-								<Button variant="outline" size="icon">
-									<PencilIcon className="size-4" />
-								</Button>
-							}
-						/>
+						<ProfileServiceDialog data={props.row.original} />
 						<Button
 							variant="outline"
 							size="icon"
@@ -117,14 +108,23 @@ export function ProfileServiceDataTable({
 								if (!open) setDeleteDialogId(undefined);
 							}}
 						>
+							{/* TODO: This cannot be deleted but set inactive */}
 							<DialogContent>
 								<DialogHeader>
 									<DialogTitle>Delete Service</DialogTitle>
 									<DialogDescription>
-										Sorry! This feature is not available yet.
+										Are you sure you want to delete this service?
 									</DialogDescription>
 								</DialogHeader>
 								<DialogFooter>
+									<Button
+										variant="outline"
+										onClick={() => {
+											deleteServiceMutation.mutate({ id: serviceId });
+										}}
+									>
+										Delete
+									</Button>
 									<DialogClose asChild>
 										<Button variant="outline">Close</Button>
 									</DialogClose>

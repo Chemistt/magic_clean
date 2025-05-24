@@ -3,10 +3,10 @@ import { Role } from "@prisma/client";
 import { BookingList } from "@/components/booking-datatable";
 import { Badge } from "@/components/ui/badge";
 import { auth } from "@/server/auth";
-import { api, HydrateClient } from "@/trpc/server";
+import { api, HydrateClient, prefetch } from "@/trpc/server";
 
 export default async function BookingsPage() {
-	void api.booking.getBookings.prefetch();
+	prefetch(api.booking.getBookings.queryOptions());
 	const session = await auth();
 	return (
 		<div className="mx-auto w-full max-w-6xl">

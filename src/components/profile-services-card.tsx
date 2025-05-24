@@ -1,10 +1,5 @@
-"use client";
-
 import { ProfileServiceDialog } from "@/components/profile-service-dialog";
-import {
-	ProfileServiceDataTable,
-	ServiceSchema,
-} from "@/components/profile-services-datatable";
+import { ProfileServiceDataTable } from "@/components/profile-services-datatable";
 import {
 	Card,
 	CardContent,
@@ -12,14 +7,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/trpc/react";
+import { api, prefetch } from "@/trpc/server";
 
 export function ProfileServicesCard() {
-	const [data] = api.service.getCurrentUserServices.useSuspenseQuery();
-	api.service.getCategories.usePrefetchQuery();
-
-	const services = ServiceSchema.array().parse(data);
-
+	prefetch(api.service.getCurrentUserServices.queryOptions());
+	prefetch(api.service.getCategories.queryOptions());
 	return (
 		<Card>
 			<CardHeader className="flex items-center justify-between">
@@ -30,7 +22,7 @@ export function ProfileServicesCard() {
 				<ProfileServiceDialog />
 			</CardHeader>
 			<CardContent>
-				<ProfileServiceDataTable services={services} />
+				<ProfileServiceDataTable />
 			</CardContent>
 		</Card>
 	);

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
 	CalendarIcon,
@@ -9,7 +10,6 @@ import {
 	StickyNoteIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -51,7 +51,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { getAvatarInitials } from "@/lib/utils";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/react";
 
 const schema = z.object({
 	bookingTime: z.date({ message: "Booking time is required" }),
@@ -67,27 +67,33 @@ type BookingFormProps = {
 };
 
 export function BookingForm({ cleanerId }: BookingFormProps) {
-	const [cleanerProfile] =
-		api.profile.getSpecificCleanerProfile.useSuspenseQuery({
+	const trpc = useTRPC();
+
+	const { data: cleanerProfile } = useSuspenseQuery(
+		trpc.profile.getSpecificCleanerProfile.queryOptions({
 			id: cleanerId,
-		});
+		})
+	);
+
 	const services = cleanerProfile?.CleanerProfile?.servicesOffered ?? [];
 	const router = useRouter();
-	const [isLoading, setIsLoading] = useState(false);
 
-	const createBookingMutation = api.booking.createBooking.useMutation({
-		onSuccess: () => {
-			toast("Booking created", {
-				description: "Your booking has been submitted successfully.",
-			});
-			router.push(`/dashboard/bookings`);
-		},
-		onError: (error) => {
-			toast("Error", {
-				description: error.message || "Something went wrong. Please try again.",
-			});
-		},
-	});
+	const { mutateAsync: createBooking, isPending } = useMutation(
+		trpc.booking.createBooking.mutationOptions({
+			onSuccess: () => {
+				toast("Booking created", {
+					description: "Your booking has been submitted successfully.",
+				});
+				router.push(`/dashboard/bookings`);
+			},
+			onError: (error) => {
+				toast("Error", {
+					description:
+						error.message || "Something went wrong. Please try again.",
+				});
+			},
+		})
+	);
 
 	const form = useForm<z.infer<typeof schema>>({
 		resolver: zodResolver(schema),
@@ -100,21 +106,6 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 		},
 	});
 
-	async function onSubmit(values: z.infer<typeof schema>) {
-		setIsLoading(true);
-		try {
-			await createBookingMutation.mutateAsync({
-				...values,
-				serviceId: Number(values.serviceId),
-				bookingTime: values.bookingTime.toISOString(),
-				cleanerId,
-			});
-		} catch (error) {
-			console.error("[CLIENT] Error creating booking:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	}
 	function handleTimeChange(type: "hour" | "minute", value: string) {
 		const currentTime = form.getValues("bookingTime");
 		const newDate = new Date(currentTime);
@@ -133,7 +124,15 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
-					void form.handleSubmit(onSubmit)(event);
+					void form.handleSubmit(
+						async (values: z.infer<typeof schema>) =>
+							await createBooking({
+								...values,
+								serviceId: Number(values.serviceId),
+								bookingTime: values.bookingTime.toISOString(),
+								cleanerId,
+							})
+					)(event);
 				}}
 				className="space-y-8"
 			>
@@ -345,7 +344,16 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 										<FormItem>
 											<FormLabel>Duration (minutes)</FormLabel>
 											<FormControl>
-												<Input type="number" min="1" step="1" {...field} />
+												<Input
+													type="number"
+													min="1"
+													step="1"
+													{...field}
+													value={field.value}
+													onChange={(event) => {
+														field.onChange(Number(event.target.value));
+													}}
+												/>
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -401,8 +409,8 @@ export function BookingForm({ cleanerId }: BookingFormProps) {
 						</section>
 					</CardContent>
 					<CardFooter className="flex justify-end p-4 md:p-6">
-						<Button type="submit" disabled={isLoading}>
-							{isLoading ? "Booking..." : "Book Now"}
+						<Button type="submit" disabled={isPending}>
+							{isPending ? "Booking..." : "Book Now"}
 						</Button>
 					</CardFooter>
 				</Card>
