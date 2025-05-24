@@ -47,14 +47,13 @@ export function ServiceForm({ service }: ServiceFormProps) {
 	const { data: categories } = useSuspenseQuery(
 		trpc.service.getCategories.queryOptions()
 	);
-
-	const { mutateAsync: updateService, isPending } = useMutation(
+	const { mutate: updateService, isPending } = useMutation(
 		trpc.service.upsertService.mutationOptions({
-			onSuccess: async () => {
+			onSuccess: () => {
 				toast("Service updated", {
 					description: "Your service has been updated successfully.",
 				});
-				await queryClient.invalidateQueries(
+				void queryClient.invalidateQueries(
 					trpc.service.getCurrentUserServices.queryFilter()
 				);
 			},
@@ -63,7 +62,7 @@ export function ServiceForm({ service }: ServiceFormProps) {
 			},
 		})
 	);
-	const form = useForm<z.infer<typeof schema>>({
+	const form = useForm({
 		resolver: zodResolver(schema),
 		defaultValues: service
 			? {
@@ -71,7 +70,11 @@ export function ServiceForm({ service }: ServiceFormProps) {
 					description: service.description ?? "",
 					categoryId: service.category.id.toString(),
 				}
-			: undefined,
+			: {
+					name: "",
+					description: "",
+					categoryId: "",
+				},
 	});
 
 	return (
@@ -79,14 +82,13 @@ export function ServiceForm({ service }: ServiceFormProps) {
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
-					void form.handleSubmit(
-						async (values: z.infer<typeof schema>) =>
-							await updateService({
-								...values,
-								categoryId: Number(values.categoryId),
-								...(service && { id: service.id }),
-							})
-					)(event);
+					void form.handleSubmit((values: z.infer<typeof schema>) => {
+						updateService({
+							...values,
+							categoryId: Number(values.categoryId),
+							...(service && { id: service.id }),
+						});
+					})(event);
 				}}
 				className="space-y-10"
 			>

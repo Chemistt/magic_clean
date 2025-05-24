@@ -6,7 +6,7 @@ import {
 	getCoreRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { CheckIcon, PencilIcon, TrashIcon, XIcon } from "lucide-react";
+import { CheckIcon, TrashIcon, XIcon } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -92,14 +92,7 @@ export function ProfileServiceDataTable() {
 				const serviceId = props.row.original.id;
 				return (
 					<div className="flex items-center gap-2">
-						<ProfileServiceDialog
-							data={props.row.original}
-							trigger={
-								<Button variant="outline" size="icon">
-									<PencilIcon className="size-4" />
-								</Button>
-							}
-						/>
+						<ProfileServiceDialog data={props.row.original} />
 						<Button
 							variant="outline"
 							size="icon"
